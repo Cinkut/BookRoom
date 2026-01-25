@@ -37,9 +37,9 @@ $router->post('/register', 'SecurityController@register');
 $router->get('/dashboard', 'DashboardController@index', ['auth']);
 $router->get('/admin/dashboard', 'DashboardController@admin', ['auth', 'admin']);
 
-// === Room Routes (do zaimplementowania w przyszłości) ===
-// $router->get('/rooms', 'RoomController@index', ['auth']);
-// $router->get('/rooms/{id}', 'RoomController@show', ['auth']);
+// === Room Routes ===
+$router->get('/rooms', 'RoomController@index', ['auth']);
+$router->get('/rooms/{id}', 'RoomController@show', ['auth']);
 // $router->post('/rooms/{id}/book', 'RoomController@book', ['auth']);
 
 // === Dispatch - uruchom odpowiedni kontroler ===
