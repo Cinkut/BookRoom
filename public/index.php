@@ -5,7 +5,7 @@
  * Główny punkt wejścia aplikacji
  * - Ładuje autoloader
  * - Startuje bezpieczną sesję (Security Bingo: HttpOnly, Secure, SameSite)
- * - Obsługuje routing
+ * - Używa Router do obsługi ścieżek
  */
 
 // === 1. Ładowanie Autoloadera ===
@@ -21,62 +21,26 @@ ini_set('session.use_strict_mode', 1);  // Strict mode - odrzucanie niezainicjow
 // Start sesji
 session_start();
 
-// === 3. Router - prosty routing URL -> Controller ===
+// === 3. Router - rejestracja routes i dispatch ===
 
-use Controllers\SecurityController;
+$router = new Router();
 
-// Pobranie URI i metody HTTP
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
+// === Security Routes ===
+$router->get('/', 'SecurityController@showLogin');
+$router->get('/login', 'SecurityController@showLogin');
+$router->post('/login', 'SecurityController@login');
+$router->get('/logout', 'SecurityController@logout');
+$router->get('/register', 'SecurityController@showRegister');
+$router->post('/register', 'SecurityController@register');
 
-// Routing
-switch ($uri) {
-    // === Security Routes ===
-    case '/':
-    case '/login':
-        $controller = new SecurityController();
-        if ($method === 'POST') {
-            $controller->login();
-        } else {
-            $controller->showLogin();
-        }
-        break;
-    
-    case '/logout':
-        $controller = new SecurityController();
-        $controller->logout();
-        break;
-    
-    case '/register':
-        $controller = new SecurityController();
-        if ($method === 'POST') {
-            $controller->register();
-        } else {
-            $controller->showRegister();
-        }
-        break;
-    
-    // === Dashboard (wymaga logowania) ===
-    case '/dashboard':
-        SecurityController::requireLogin();
-        echo '<h1>Dashboard (User)</h1>';
-        echo '<p>Witaj, ' . htmlspecialchars($_SESSION['user']['email']) . '!</p>';
-        echo '<p>Rola: ' . htmlspecialchars($_SESSION['user']['role_name']) . '</p>';
-        echo '<a href="/logout">Wyloguj</a>';
-        break;
-    
-    case '/admin/dashboard':
-        SecurityController::requireAdmin();
-        echo '<h1>Dashboard (Admin)</h1>';
-        echo '<p>Panel administracyjny</p>';
-        echo '<a href="/logout">Wyloguj</a>';
-        break;
-    
-    // === 404 Not Found ===
-    default:
-        http_response_code(404);
-        echo '<h1>404 - Nie znaleziono strony</h1>';
-        echo '<p>Strona <code>' . htmlspecialchars($uri) . '</code> nie istnieje.</p>';
-        echo '<a href="/login">Powrót do logowania</a>';
-        break;
-}
+// === Dashboard Routes (wymaga logowania) ===
+$router->get('/dashboard', 'DashboardController@index', ['auth']);
+$router->get('/admin/dashboard', 'DashboardController@admin', ['auth', 'admin']);
+
+// === Room Routes (do zaimplementowania w przyszłości) ===
+// $router->get('/rooms', 'RoomController@index', ['auth']);
+// $router->get('/rooms/{id}', 'RoomController@show', ['auth']);
+// $router->post('/rooms/{id}/book', 'RoomController@book', ['auth']);
+
+// === Dispatch - uruchom odpowiedni kontroler ===
+$router->dispatch();
