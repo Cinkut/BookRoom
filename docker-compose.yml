@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: bookroom_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/var/www/html/public
+      - ./views:/var/www/html/views
+      - ./src:/var/www/html/src
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - bookroom_network
+
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: bookroom_php
+    volumes:
+      - ./public:/var/www/html/public
+      - ./views:/var/www/html/views
+      - ./src:/var/www/html/src
+    networks:
+      - bookroom_network
+
+  db:
+    image: postgres:15
+    container_name: bookroom_db
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbpassword
+      POSTGRES_DB: bookroom
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - bookroom_network
+
+networks:
+  bookroom_network:
+    driver: bridge
+
+volumes:
+  db_data:

@@ -1,0 +1,21 @@
+# Pliki IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Pliki systemu
+.DS_Store
+Thumbs.db
+
+# Logi
+*.log
+
+# Dane bazy danych (volume Docker)
+/data/
+
+# Environment variables (gdy później dodamy)
+.env
+
+rules.md
