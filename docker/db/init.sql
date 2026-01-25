@@ -190,12 +190,12 @@ INSERT INTO roles (name) VALUES
 -- Użytkownik administratora
 -- Hasło: admin123 (hash bcrypt)
 INSERT INTO users (email, password, role_id) VALUES 
-    ('admin@bookroom.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
+    ('admin@bookroom.com', '$2y$10$YI/wqIarcjto5fki3H/qruXOq6D6KRAY2Oe/1yxGU3df84djFdgYC', 1);
 
 -- Użytkownicy testowi
 INSERT INTO users (email, password, role_id) VALUES 
-    ('user@bookroom.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2),
-    ('john.doe@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2);
+    ('user@bookroom.com', '$2y$10$YI/wqIarcjto5fki3H/qruXOq6D6KRAY2Oe/1yxGU3df84djFdgYC', 2),
+    ('john.doe@example.com', '$2y$10$YI/wqIarcjto5fki3H/qruXOq6D6KRAY2Oe/1yxGU3df84djFdgYC', 2);
 
 -- Sale konferencyjne
 INSERT INTO rooms (name, capacity, description, image_path) VALUES 
