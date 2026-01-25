@@ -30,8 +30,7 @@ $router->get('/', 'SecurityController@showLogin');
 $router->get('/login', 'SecurityController@showLogin');
 $router->post('/login', 'SecurityController@login');
 $router->get('/logout', 'SecurityController@logout');
-$router->get('/register', 'SecurityController@showRegister');
-$router->post('/register', 'SecurityController@register');
+
 
 // === Dashboard Routes (wymaga logowania) ===
 $router->get('/dashboard', 'DashboardController@index', ['auth']);

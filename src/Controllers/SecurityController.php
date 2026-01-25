@@ -156,77 +156,7 @@ class SecurityController
         exit;
     }
     
-    /**
-     * Wyświetl formularz rejestracji (na przyszłość)
-     */
-    public function showRegister(): void
-    {
-        require_once __DIR__ . '/../../views/security/register.php';
-    }
-    
-    /**
-     * Obsługa rejestracji (POST)
-     */
-    public function register(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /register');
-            exit;
-        }
-        
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $passwordConfirm = $_POST['password_confirm'] ?? '';
-        
-        // Walidacja
-        if (empty($email) || empty($password) || empty($passwordConfirm)) {
-            $_SESSION['error'] = 'Wszystkie pola są wymagane.';
-            header('Location: /register');
-            exit;
-        }
-        
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['error'] = 'Niepoprawny format adresu email.';
-            header('Location: /register');
-            exit;
-        }
-        
-        if ($password !== $passwordConfirm) {
-            $_SESSION['error'] = 'Hasła nie są identyczne.';
-            header('Location: /register');
-            exit;
-        }
-        
-        if (strlen($password) < 6) {
-            $_SESSION['error'] = 'Hasło musi mieć minimum 6 znaków.';
-            header('Location: /register');
-            exit;
-        }
-        
-        // Sprawdzenie czy email już istnieje
-        if ($this->userRepository->emailExists($email)) {
-            $_SESSION['error'] = 'Ten adres email jest już zarejestrowany.';
-            header('Location: /register');
-            exit;
-        }
-        
-        // Utworzenie hash hasła (bcrypt)
-        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-        
-        // Utworzenie użytkownika
-        $userId = $this->userRepository->create($email, $passwordHash, 2); // role_id = 2 (user)
-        
-        if ($userId === null) {
-            $_SESSION['error'] = 'Błąd podczas rejestracji. Spróbuj ponownie.';
-            header('Location: /register');
-            exit;
-        }
-        
-        // Rejestracja pomyślna
-        $_SESSION['success'] = 'Rejestracja pomyślna! Możesz się teraz zalogować.';
-        header('Location: /login');
-        exit;
-    }
+
     
     /**
      * Sprawdź czy użytkownik jest zalogowany
