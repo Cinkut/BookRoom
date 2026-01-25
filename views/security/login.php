@@ -9,16 +9,23 @@
 <body>
     <div class="auth-container">
         <div class="auth-card">
-            <!-- Logo / Header -->
+            <!-- Logo / Header - zgodny z prototypem -->
             <div class="auth-header">
-                <h1>BookRoom</h1>
-                <p class="subtitle">Zarezerwuj salę konferencyjną</p>
+                <!-- Ikona kalendarza (jak w prototypie) -->
+                <div class="auth-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+                    </svg>
+                </div>
+                
+                <h1>Conference Room Manager</h1>
+                <p class="subtitle">Sign in to manage your bookings</p>
             </div>
             
             <!-- Komunikaty (błąd/sukces) -->
             <?php if (isset($_SESSION['error'])): ?>
                 <div class="alert alert-error">
-                    <span class="alert-icon">⚠️</span>
+                    <span class="alert-icon">⚠</span>
                     <span><?= htmlspecialchars($_SESSION['error']) ?></span>
                 </div>
                 <?php unset($_SESSION['error']); ?>
@@ -35,12 +42,12 @@
             <!-- Formularz logowania -->
             <form method="POST" action="/login" class="auth-form">
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email Address</label>
                     <input 
                         type="email" 
                         id="email" 
                         name="email" 
-                        placeholder="np. admin@bookroom.com"
+                        placeholder="you@company.com"
                         required
                         autocomplete="email"
                         autofocus
@@ -48,32 +55,39 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Hasło</label>
+                    <label for="password">Password</label>
                     <input 
                         type="password" 
                         id="password" 
                         name="password" 
-                        placeholder="Wprowadź hasło"
+                        placeholder="Enter your password"
                         required
                         autocomplete="current-password"
                     >
                 </div>
                 
+                <!-- Remember me + Forgot password (jak w prototypie) -->
+                <div class="form-row">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="remember" name="remember">
+                        <label for="remember">Remember me</label>
+                    </div>
+                    <a href="#" class="form-link">Forgot password?</a>
+                </div>
+                
                 <button type="submit" class="btn btn-primary btn-block">
-                    Zaloguj się
+                    Sign In
                 </button>
             </form>
             
             <!-- Link do rejestracji -->
             <div class="auth-footer">
-                <p>Nie masz konta? <a href="/register">Zarejestruj się</a></p>
+                <p>Don't have an account? <a href="#">Contact your admin</a></p>
             </div>
             
-            <!-- Demo credentials (usuń w produkcji) -->
+            <!-- Demo credentials -->
             <div class="demo-credentials">
-                <p><strong>Demo:</strong></p>
-                <p>Email: admin@bookroom.com</p>
-                <p>Hasło: admin123</p>
+                <p><strong>Demo:</strong> Use any email and password to sign in</p>
             </div>
         </div>
     </div>
