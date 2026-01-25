@@ -18,4 +18,8 @@ Thumbs.db
 # Environment variables (gdy później dodamy)
 .env
 
+# Pliki testowe (nie commitujemy)
+public/test-*.php
+test-*.php
+
 rules.md
