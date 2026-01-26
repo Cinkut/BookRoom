@@ -4,261 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conference Rooms - BookRoom</title>
-    <style>
-        :root {
-            --bg-body: #F9FAFB;
-            --bg-card: #FFFFFF;
-            --text-main: #111827;
-            --text-secondary: #6B7280;
-            --primary: #1F2937; /* Dark navy/black from screenshot */
-            --accent-green-bg: #D1FAE5;
-            --accent-green-text: #065F46;
-            --accent-red-bg: #FEE2E2;
-            --accent-red-text: #991B1B;
-            --border: #E5E7EB;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: var(--bg-body);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Navbar */
-        .navbar {
-            background: white;
-            border-bottom: 1px solid var(--border);
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .nav-icon {
-            width: 32px;
-            height: 32px;
-            background: #2563EB;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: var(--text-main);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .nav-link:hover {
-            color: #2563EB;
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 32px;
-        }
-
-        /* Search & Filter */
-        .controls-section {
-            margin-bottom: 32px;
-        }
-
-        .search-bar {
-            width: 100%;
-            max-width: 100%;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 15px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text-secondary);
-        }
-        
-        .search-input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 15px;
-            color: var(--text-main);
-        }
-
-        .filters {
-            display: flex;
-            gap: 12px;
-        }
-
-        .filter-btn {
-            border: 1px solid var(--border);
-            background: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            color: var(--text-main);
-            transition: all 0.2s;
-        }
-
-        .filter-btn.active {
-            background: black;
-            color: white;
-            border-color: black;
-        }
-
-        .filter-btn:hover:not(.active) {
-            background: #F3F4F6;
-        }
-
-        /* Grid */
-        .rooms-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-        }
-
-        /* Card */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            transition: box-shadow 0.2s;
-        }
-
-        .card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        .card-header {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-        }
-
-        .room-icon-lg {
-            width: 48px;
-            height: 48px;
-            background: #EFF6FF; /* Default light blue */
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .room-icon-img {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-        }
-
-        .room-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .room-capacity {
-            color: var(--text-secondary);
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-available {
-            background: var(--accent-green-bg);
-            color: var(--accent-green-text);
-        }
-        
-        .status-occupied {
-            background: var(--accent-red-bg);
-            color: var(--accent-red-text);
-        }
-
-        .next-available {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            background: #F3F4F6;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-details {
-            background: #000000;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px;
-            font-weight: 500;
-            width: 100%;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: auto;
-            text-decoration: none;
-            text-align: center;
-            display: block;
-            box-sizing: border-box;
-        }
-
-        .btn-details:hover {
-            background: #1F2937;
-        }
-
-    </style>
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
 
@@ -307,9 +53,9 @@
             </div>
 
             <div class="filters">
-                <button class="filter-btn active">All Rooms</button>
-                <button class="filter-btn">Available</button>
-                <button class="filter-btn">Occupied</button>
+                <button class="filter-btn active" data-filter="all">All Rooms</button>
+                <button class="filter-btn" data-filter="available">Available</button>
+                <button class="filter-btn" data-filter="occupied">Occupied</button>
             </div>
         </div>
 
@@ -321,13 +67,19 @@
         <?php else: ?>
             <div class="rooms-grid">
                 <?php foreach ($rooms as $room): 
-                    // Randomize status for visual demo purposes if not present
-                    $isAvailable = true; // Default to available
+                    // Randomize status for visual demo purposes
+                    // TODO: Replace with real DB check in the future
+                    $isAvailable = true; 
+                    // Simple mock logic: even IDs are available, odd are occupied (just for demo consistency)
+                    if ($room['id'] % 2 != 0) $isAvailable = false; 
+
+                    $status = $isAvailable ? 'available' : 'occupied';
+                    
                     // Use icons based on room name or random
                     $icons = ['🏢', '💡', '👔', '🎨', '🤝', '📚'];
                     $icon = $icons[array_rand($icons)];
                 ?>
-                <div class="card">
+                <div class="room-card" data-status="<?= $status ?>">
                     <div class="card-header">
                         <div class="room-icon-lg">
                             <span style="font-size: 24px;"><?= $icon ?></span>
@@ -355,7 +107,7 @@
                     </div>
 
                     <div class="next-available">
-                        Next available: <strong>Now</strong>
+                        Next available: <strong><?= $isAvailable ? 'Now' : '4:30 PM' ?></strong>
                     </div>
 
                     <div class="tags">
@@ -388,5 +140,7 @@
         <?php endif; ?>
 
     </main>
+
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>
