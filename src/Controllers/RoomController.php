@@ -15,54 +15,57 @@ use Repository\RoomRepository;
  */
 class RoomController
 {
+
     private RoomRepository $roomRepository;
-    
-    /**
-     * Constructor - inicjalizacja repository
-     */
+    private \Repository\BookingRepository $bookingRepository;
+
     public function __construct()
     {
-        $this->roomRepository = new RoomRepository();
+        $database = new \Database();
+        $db = $database->connect();
+        $this->roomRepository = new RoomRepository($db);
+        $this->bookingRepository = new \Repository\BookingRepository($db);
     }
-    
+
     /**
-     * Lista wszystkich sal konferencyjnych
-     * 
-     * Pobiera dane z RoomRepository::getAllRooms() (który używa widoku v_room_details)
-     * i renderuje widok views/room/index.php
+     * Lista pokoi
      */
     public function index(): void
     {
-        // Pobierz sale z bazy danych (przez Repository)
+        // Sprawdź czy użytkownik jest zalogowany (middleware auth to robi, ale dla pewności)
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
         $rooms = $this->roomRepository->getAllRooms();
-        
-        // Renderuj widok
-        require_once __DIR__ . '/../../views/room/index.php';
+        $user = $_SESSION['user'];
+
+        // Renderuj widok dashboard
+        // TODO: Zmienić na dedykowany widok listy pokoi jeśli powstanie, na razie dashboard
+        // W routingu index() jest mapowane na /rooms, a dashboard na DashboardController
+        header('Location: /dashboard');
+        exit;
     }
-    
+
     /**
-     * Szczegóły pojedynczej sali
-     * 
-     * @param array $params Parametry URL ['id' => '5']
+     * Szczegóły pokoju
      */
     public function show(array $params): void
     {
-        $roomId = (int)$params['id'];
-        
-        // Pobierz salę z bazy
-        $room = $this->roomRepository->getRoomById($roomId);
-        
+        $id = (int)$params['id'];
+        $room = $this->roomRepository->getRoomById($id);
+
         if ($room === null) {
-            // 404 - sala nie istnieje
             http_response_code(404);
-            echo '<h1>404 - Room Not Found</h1>';
-            echo '<a href="/rooms">Back to rooms</a>';
+            echo "Room not found";
             return;
         }
-        
+
         // Renderuj widok szczegółów
         require_once __DIR__ . '/../../views/room/show.php';
     }
+
     /**
      * Formularz rezerwacji
      */
@@ -86,23 +89,63 @@ class RoomController
     public function processBook(array $params): void
     {
         $roomId = (int)$params['id'];
+        $userId = $_SESSION['user']['id'] ?? 0; // Powinno być zawsze ustawione dzięki sesji
+
         $room = $this->roomRepository->getRoomById($roomId);
-        
         if ($room === null) {
             http_response_code(404);
-            echo 'Room not found';
-            return;
+            die('Room not found');
         }
 
         // Pobranie danych z formularza
-        // TODO: W przyszłości dodać walidację i zapis do bazy przez BookingRepository
-        $date = $_POST['date'] ?? date('Y-m-d');
-        $startTime = $_POST['start_time'] ?? '00:00';
-        $endTime = $_POST['end_time'] ?? '00:00';
-        $roomName = $room['name'];
-        $timeRange = "$startTime - $endTime";
+        // TODO: Dodać lepszą walidację danych wejściowych
+        $date = $_POST['date'] ?? date('Y-m-d'); // Oczekiwany format YYYY-MM-DD
+        $startTime = $_POST['start_time'] ?? '09:00';
+        $endTime = $_POST['end_time'] ?? '10:00';
+        $attendees = $_POST['attendees'] ?? 1;
+        
+        // Prosta konwersja daty z formatu "Wednesday, October 29, 2025" na "2025-10-29" jeśli potrzeba
+        // Na razie zakładamy, że input date przesyła Y-m-d lub użytkownik wpisał poprawnie
+        // W wersji produkcyjnej należałoby to sparsować biblioteką DateTime
+        try {
+           $dt = new \DateTime($date);
+           $formattedDate = $dt->format('Y-m-d');
+        } catch (\Exception $e) {
+           $formattedDate = date('Y-m-d'); // Fallback
+        }
 
-        // Symulacja sukcesu
-        require_once __DIR__ . '/../../views/room/success.php';
+        try {
+            // Próba zapisu do bazy
+            $this->bookingRepository->createBooking(
+                $userId, 
+                $roomId, 
+                $formattedDate, 
+                $startTime, 
+                $endTime
+            );
+
+            // Dane do widoku sukcesu
+            $roomName = $room['name'];
+            $timeRange = "$startTime - $endTime";
+            $date = $formattedDate; // Nadpisujemy zmienną date formatem bazy, żeby ładnie wyglądało
+
+            require_once __DIR__ . '/../../views/room/success.php';
+
+        } catch (\PDOException $e) {
+            // Błąd bazy danych (np. trigger konfliktu terminów)
+            // W prosty sposób wyświetlamy błąd i przycisk powrotu
+            // TODO: W przyszłości przekazać błąd do widoku book.php i wyświetlić w formularzu
+            $errorMessage = "Booking failed! The room is likely already booked for this time slot.";
+            if (str_contains($e->getMessage(), 'conflict')) {
+                 $errorMessage = "This time slot is already occupied.";
+            }
+            
+            echo "<div style='padding: 20px; text-align: center; font-family: sans-serif;'>";
+            echo "<h2 style='color: #dc2626;'>Error</h2>";
+            echo "<p>$errorMessage</p>";
+            echo "<p><small>Technical details: " . htmlspecialchars($e->getMessage()) . "</small></p>";
+            echo "<a href='/rooms/$roomId/book' style='display: inline-block; padding: 10px 20px; background: #000; color: #fff; text-decoration: none; border-radius: 6px;'>Try Again</a>";
+            echo "</div>";
+        }
     }
 }
