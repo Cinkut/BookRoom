@@ -12,6 +12,18 @@ class ProfileController
     /**
      * Wyświetlanie profilu użytkownika
      */
+    private \Repository\BookingRepository $bookingRepository;
+
+    public function __construct()
+    {
+        $database = new \Database();
+        $db = $database->connect();
+        $this->bookingRepository = new \Repository\BookingRepository($db);
+    }
+
+    /**
+     * Wyświetlanie profilu użytkownika
+     */
     public function index(): void
     {
         // Sprawdź czy użytkownik jest zalogowany
@@ -22,41 +34,39 @@ class ProfileController
 
         $user = $_SESSION['user'];
         
-        // Mock danych rezerwacji (ponieważ system rezerwacji jeszcze nie istnieje)
-        // TODO: Zastąpić pobieraniem z BookingRepository po implementacji rezerwacji
-        $upcomingBookings = [
-            [
-                'room_name' => 'Executive Suite A',
-                'title' => 'Q4 Planning Session',
-                'date' => 'October 30, 2025',
-                'time' => '2:00 PM - 3:30 PM',
-                'attendees' => 8,
-                'status' => 'confirmed'
-            ],
-            [
-                'room_name' => 'Board Room',
-                'title' => 'Executive Review',
-                'date' => 'November 2, 2025',
-                'time' => '10:00 AM - 12:00 PM',
-                'attendees' => 12,
-                'status' => 'confirmed'
-            ],
-            [
-                'room_name' => 'Creative Studio',
-                'title' => 'Design Brainstorm',
-                'date' => 'November 5, 2025',
-                'time' => '3:00 PM - 4:00 PM',
-                'attendees' => 5,
-                'status' => 'pending'
-            ]
-        ];
+        // Pobierz prawdziwe rezerwacje z bazy
+        $dbBookings = $this->bookingRepository->getUpcomingBookingByUser($user['id']);
+        
+        // Mapowanie danych z bazy na format widoku (żeby nie zmieniać widoku)
+        $upcomingBookings = [];
+        foreach ($dbBookings as $b) {
+            // Formatowanie daty i czasu
+            $dateObj = new \DateTime($b['date']);
+            $dateStr = $dateObj->format('F j, Y'); // np. October 30, 2025
+            
+            $startObj = new \DateTime($b['start_time']);
+            $endObj = new \DateTime($b['end_time']);
+            $timeStr = $startObj->format('g:i A') . ' - ' . $endObj->format('g:i A'); // 2:00 PM - 3:30 PM
+            
+            $upcomingBookings[] = [
+                'id' => $b['booking_id'], // Dodaję ID, przyda się do anulowania/linków
+                'room_name' => $b['room_name'],
+                'room_id' => $b['room_id'],
+                'title' => 'Meeting', // W bazie nie mamy kolumny 'title', dajemy placeholder lub 'Booking'
+                'date' => $dateStr,
+                'time' => $timeStr,
+                'attendees' => 'N/A', // Nie zapisujemy attendees w bazie, placeholder
+                'status' => $b['status']
+            ];
+        }
 
         /*
          * Dane do statystyk
+         * Na razie 'completed' to mock, bo nie mamy historii starszej niż 'upcoming' w tej metodzie
          */
         $stats = [
             'upcoming' => count($upcomingBookings),
-            'completed' => 3 // Mock value
+            'completed' => 12 // Mock value, w przyszłości dodać metodę getPastBookings
         ];
 
         require_once __DIR__ . '/../../views/user/profile.php';
