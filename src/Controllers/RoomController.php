@@ -63,4 +63,20 @@ class RoomController
         // Renderuj widok szczegółów
         require_once __DIR__ . '/../../views/room/show.php';
     }
+    /**
+     * Formularz rezerwacji
+     */
+    public function book(array $params): void
+    {
+        $roomId = (int)$params['id'];
+        $room = $this->roomRepository->getRoomById($roomId);
+        
+        if ($room === null) {
+            http_response_code(404);
+            echo 'Room not found';
+            return;
+        }
+
+        require_once __DIR__ . '/../../views/room/book.php';
+    }
 }

@@ -342,7 +342,7 @@
                 </div>
 
                 <!-- Mockup button functionality -->
-                <button class="btn-book" onclick="alert('Booking modal would open here')">Book This Room</button>
+                <a href="/rooms/<?= $room['id'] ?>/book" class="btn-book" style="display: block; text-align: center; text-decoration: none; box-sizing: border-box;">Book This Room</a>
             </div>
 
             <div class="card">
