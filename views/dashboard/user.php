@@ -70,12 +70,11 @@
                     // Randomize status for visual demo purposes
                     // TODO: Replace with real DB check in the future
                     $isAvailable = true; 
-                    // Simple mock logic: even IDs are available, odd are occupied (just for demo consistency)
-                    if ($room['id'] % 2 != 0) $isAvailable = false; 
+                    // Simple mock logic
+                    if ($room->getId() % 2 != 0) $isAvailable = false; 
 
                     $status = $isAvailable ? 'available' : 'occupied';
                     
-                    // Use icons based on room name or random
                     $icons = ['🏢', '💡', '👔', '🎨', '🤝', '📚'];
                     $icon = $icons[array_rand($icons)];
                 ?>
@@ -85,7 +84,7 @@
                             <span style="font-size: 24px;"><?= $icon ?></span>
                         </div>
                         <div class="room-info">
-                            <h3><?= htmlspecialchars($room['name']) ?></h3>
+                            <h3><?= htmlspecialchars($room->getName()) ?></h3>
                             <div class="room-capacity">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -93,7 +92,7 @@
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                 </svg>
-                                <?= htmlspecialchars($room['capacity']) ?> people
+                                <?= htmlspecialchars($room->getCapacity()) ?> people
                             </div>
                         </div>
                     </div>
@@ -112,7 +111,7 @@
 
                     <div class="tags">
                         <?php 
-                        $equipmentItems = !empty($room['equipment_list']) ? explode(', ', $room['equipment_list']) : [];
+                        $equipmentItems = $room->getEquipment();
                         $displayItems = array_slice($equipmentItems, 0, 2);
                         $remaining = count($equipmentItems) - 2;
                         
@@ -133,7 +132,7 @@
                         <?php endif; ?>
                     </div>
 
-                    <a href="/rooms/<?= $room['id'] ?>" class="btn-details">View Details</a>
+                    <a href="/rooms/<?= $room->getId() ?>" class="btn-details">View Details</a>
                 </div>
                 <?php endforeach; ?>
             </div>

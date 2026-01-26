@@ -35,22 +35,22 @@ class RoomRepository
     /**
      * Pobierz wszystkie sale konferencyjne z wyposażeniem
      * 
-     * Wykorzystuje widok v_room_details z bazy danych.
-     * Widok łączy tabele rooms + room_equipment + equipment
-     * i używa STRING_AGG() do agregacji listy wyposażenia.
-     * 
-     * @return array Lista sal z wyposażeniem
+     * @return \Models\Room[] Lista obiektów Room
      */
     public function getAllRooms(): array
     {
         try {
-            // BINGO D1: SQL w Repository, nie w kontrolerze
-            // WDPAI: Wykorzystanie widoku v_room_details (zaawansowany obiekt SQL)
             $sql = "SELECT * FROM v_room_details ORDER BY capacity DESC";
-            
             $stmt = $this->db->query($sql);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            return $stmt->fetchAll();
+            // Mapowanie tablic na obiekty (OOP)
+            $rooms = [];
+            foreach ($results as $row) {
+                $rooms[] = \Models\Room::fromArray($row);
+            }
+            
+            return $rooms;
             
         } catch (PDOException $e) {
             error_log("RoomRepository::getAllRooms - Error: " . $e->getMessage());
