@@ -39,7 +39,9 @@ $router->get('/admin/dashboard', 'DashboardController@admin', ['auth', 'admin'])
 // === Room Routes ===
 $router->get('/rooms', 'RoomController@index', ['auth']);
 $router->get('/rooms/{id}', 'RoomController@show', ['auth']);
-// $router->post('/rooms/{id}/book', 'RoomController@book', ['auth']);
+
+// === User Profile Routes ===
+$router->get('/profile', 'ProfileController@index', ['auth']);
 
 // === Dispatch - uruchom odpowiedni kontroler ===
 $router->dispatch();
