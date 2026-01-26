@@ -21,9 +21,8 @@ class RoomController
 
     public function __construct()
     {
-        $database = new \Database();
-        $db = $database->connect();
-        $this->roomRepository = new RoomRepository($db);
+        $db = \Database::getInstance()->getConnection();
+        $this->roomRepository = new RoomRepository();
         $this->bookingRepository = new \Repository\BookingRepository($db);
     }
 

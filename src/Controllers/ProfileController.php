@@ -16,8 +16,7 @@ class ProfileController
 
     public function __construct()
     {
-        $database = new \Database();
-        $db = $database->connect();
+        $db = \Database::getInstance()->getConnection();
         $this->bookingRepository = new \Repository\BookingRepository($db);
     }
 
