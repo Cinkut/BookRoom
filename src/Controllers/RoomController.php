@@ -61,6 +61,9 @@ class RoomController
             return;
         }
 
+        // Pobierz kalendarz rezerwacji dla tej sali
+        $bookings = $this->bookingRepository->getUpcomingBookingsByRoom($id);
+
         // Renderuj widok szczegółów
         require_once __DIR__ . '/../../views/room/show.php';
     }

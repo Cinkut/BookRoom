@@ -94,7 +94,7 @@
                 <div class="section-title">Availability Calendar</div>
                 <div class="calendar-header">
                     <div class="nav-btn">&lt;</div>
-                    <span>January 2026</span>
+                    <span><!-- JS Fill --></span>
                     <div class="nav-btn">&gt;</div>
                 </div>
 
@@ -106,102 +106,27 @@
                     <div class="day-name">Th</div>
                     <div class="day-name">Fr</div>
                     <div class="day-name">Sa</div>
-                    
-                    <!-- Mock Calendar Days -->
-                    <div class="day-cell" style="color: #cbd5e1;">28</div>
-                    <div class="day-cell" style="color: #cbd5e1;">29</div>
-                    <div class="day-cell" style="color: #cbd5e1;">30</div>
-                    <div class="day-cell" style="color: #cbd5e1;">31</div>
-                    <div class="day-cell">1</div>
-                    <div class="day-cell">2</div>
-                    <div class="day-cell">3</div>
-
-                    <div class="day-cell">4</div>
-                    <div class="day-cell">5</div>
-                    <div class="day-cell">6</div>
-                    <div class="day-cell">7</div>
-                    <div class="day-cell">8</div>
-                    <div class="day-cell">9</div>
-                    <div class="day-cell">10</div>
-
-                    <div class="day-cell">11</div>
-                    <div class="day-cell">12</div>
-                    <div class="day-cell">13</div>
-                    <div class="day-cell">14</div>
-                    <div class="day-cell">15</div>
-                    <div class="day-cell">16</div>
-                    <div class="day-cell">17</div>
-
-                    <div class="day-cell">18</div>
-                    <div class="day-cell">19</div>
-                    <div class="day-cell">20</div>
-                    <div class="day-cell">21</div>
-                    <div class="day-cell">22</div>
-                    <div class="day-cell">23</div>
-                    <div class="day-cell">24</div>
-
-                    <div class="day-cell">25</div>
-                    <div class="day-cell active">26</div>
-                    <div class="day-cell">27</div>
-                    <div class="day-cell">28</div>
-                    <div class="day-cell">29</div>
-                    <div class="day-cell">30</div>
-                    <div class="day-cell">31</div>
+                    <!-- JS Fill -->
                 </div>
             </div>
 
             <div class="card">
-                <div class="section-title">Today's Schedule</div>
+                <div class="section-title" style="margin-bottom: 12px;">Schedule</div>
+                <div class="selected-date-display" style="font-size: 13px; color: #6B7280; margin-bottom: 16px; border-bottom: 1px solid #E5E7EB; padding-bottom: 8px;">
+                    <!-- JS Fill -->
+                </div>
                 
-                <div class="schedule-item">
-                    <div class="schedule-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="#64748b">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div class="timeline">
-                        <div class="time-range">9:00 AM - 10:30 AM</div>
-                        <div class="event-name">Team Standup</div>
-                    </div>
-                </div>
-
-                <div class="schedule-item available">
-                    <div class="schedule-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="#059669">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div class="timeline">
-                        <div class="time-range">10:30 AM - 12:00 PM</div>
-                        <div class="event-name">Available</div>
-                    </div>
-                </div>
-
-                <div class="schedule-item">
-                    <div class="schedule-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="#64748b">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div class="timeline">
-                        <div class="time-range">12:00 PM - 1:00 PM</div>
-                        <div class="event-name">Client Meeting</div>
-                    </div>
-                </div>
-
-                <div class="schedule-item available">
-                    <div class="schedule-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="#059669">
-                            <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div class="timeline">
-                        <div class="time-range">1:00 PM - 5:00 PM</div>
-                        <div class="event-name">Available</div>
-                    </div>
+                <div class="schedule-container">
+                    <!-- JS Fill -->
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Inject PHP Data for JS -->
+    <script>
+        window.roomBookings = <?= json_encode($bookings ?? []) ?>;
+    </script>
+    <script src="/js/room-details.js"></script>
 </body>
 </html>

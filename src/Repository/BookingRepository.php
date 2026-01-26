@@ -64,4 +64,20 @@ class BookingRepository
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function getUpcomingBookingsByRoom(int $roomId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT date, start_time, end_time, status 
+            FROM bookings
+            WHERE room_id = :room_id 
+              AND date >= CURRENT_DATE 
+              AND status != 'cancelled'
+            ORDER BY date ASC, start_time ASC
+        ");
+        
+        $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
