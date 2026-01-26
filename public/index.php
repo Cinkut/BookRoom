@@ -40,6 +40,7 @@ $router->get('/admin/dashboard', 'DashboardController@admin', ['auth', 'admin'])
 $router->get('/rooms', 'RoomController@index', ['auth']);
 $router->get('/rooms/{id}', 'RoomController@show', ['auth']);
 $router->get('/rooms/{id}/book', 'RoomController@book', ['auth']);
+$router->post('/rooms/{id}/book', 'RoomController@processBook', ['auth']);
 
 // === User Profile Routes ===
 $router->get('/profile', 'ProfileController@index', ['auth']);

@@ -79,4 +79,30 @@ class RoomController
 
         require_once __DIR__ . '/../../views/room/book.php';
     }
+
+    /**
+     * Przetwarzanie rezerwacji (POST)
+     */
+    public function processBook(array $params): void
+    {
+        $roomId = (int)$params['id'];
+        $room = $this->roomRepository->getRoomById($roomId);
+        
+        if ($room === null) {
+            http_response_code(404);
+            echo 'Room not found';
+            return;
+        }
+
+        // Pobranie danych z formularza
+        // TODO: W przyszłości dodać walidację i zapis do bazy przez BookingRepository
+        $date = $_POST['date'] ?? date('Y-m-d');
+        $startTime = $_POST['start_time'] ?? '00:00';
+        $endTime = $_POST['end_time'] ?? '00:00';
+        $roomName = $room['name'];
+        $timeRange = "$startTime - $endTime";
+
+        // Symulacja sukcesu
+        require_once __DIR__ . '/../../views/room/success.php';
+    }
 }
