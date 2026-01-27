@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book <?= htmlspecialchars($room['name']) ?> - BookRoom</title>
     <link rel="stylesheet" href="/css/booking-form.css">
-    <style>
-        /* Fallback if css file is missing or cached */
-        .day-cell { cursor: pointer; }
-        .day-cell:hover { background-color: #f3f4f6; border-radius: 4px; }
-        .day-cell.active { background-color: black; color: white; border-radius: 4px; }
-        .booking-summary { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
-        .capacity-hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
-    </style>
+
 </head>
 <body>
 
