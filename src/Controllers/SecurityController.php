@@ -50,6 +50,7 @@ class SecurityController
      * 
      * Security features:
      * - CSRF token validation (zapobieganie atakom CSRF)
+     * - Login attempt rate limiting (ochrona przed brute force)
      * - password_verify() dla hashów bcrypt
      * - session_regenerate_id() po zalogowaniu (zapobieganie session fixation)
      * - Walidacja danych wejściowych
@@ -58,6 +59,14 @@ class SecurityController
     {
         // Sprawdź czy żądanie to POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /login');
+            exit;
+        }
+        
+        // Sprawdź czy użytkownik nie jest zablokowany
+        if ($this->isLoginBlocked()) {
+            $remainingTime = $this->getRemainingBlockTime();
+            $_SESSION['error'] = "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie za {$remainingTime} sekund.";
             header('Location: /login');
             exit;
         }
@@ -92,6 +101,7 @@ class SecurityController
         
         // Sprawdzenie czy użytkownik istnieje
         if ($user === null) {
+            $this->handleFailedLogin($email);
             $_SESSION['error'] = 'Nieprawidłowy email lub hasło.';
             header('Location: /login');
             exit;
@@ -100,12 +110,16 @@ class SecurityController
         // Weryfikacja hasła (bcrypt hash)
         // Security Bingo: password_verify() zamiast prostego porównania
         if (!password_verify($password, $user['password'])) {
+            $this->handleFailedLogin($email);
             $_SESSION['error'] = 'Nieprawidłowy email lub hasło.';
             header('Location: /login');
             exit;
         }
         
         // === LOGOWANIE POMYŚLNE ===
+        
+        // Wyczyść licznik nieudanych prób
+        $this->resetLoginAttempts();
         
         // Security Bingo: Regeneracja ID sesji (zapobieganie session fixation)
         session_regenerate_id(true);
@@ -208,5 +222,86 @@ class SecurityController
             header('Location: /dashboard');
             exit;
         }
+    }
+    
+    /**
+     * Obsługa nieudanej próby logowania
+     * 
+     * Zwiększa licznik prób, dodaje opóźnienie i blokuje konto po przekroczeniu limitu
+     * 
+     * @param string $email Email użytkownika (do logowania)
+     */
+    private function handleFailedLogin(string $email): void
+    {
+        // Inicjalizacja licznika prób jeśli nie istnieje
+        if (!isset($_SESSION['login_attempts'])) {
+            $_SESSION['login_attempts'] = 0;
+            $_SESSION['first_attempt_time'] = time();
+        }
+        
+        // Zwiększ licznik
+        $_SESSION['login_attempts']++;
+        $attempts = $_SESSION['login_attempts'];
+        
+        // Progresywne opóźnienie (rate limiting)
+        // 1-2 próby: 1s, 3-4 próby: 2s, 5+ prób: 3s
+        if ($attempts >= 5) {
+            sleep(3);
+        } elseif ($attempts >= 3) {
+            sleep(2);
+        } else {
+            sleep(1);
+        }
+        
+        // Blokada czasowa po 5 nieudanych próbach
+        if ($attempts >= 5) {
+            $_SESSION['login_blocked_until'] = time() + 300; // 5 minut blokady
+        }
+    }
+    
+    /**
+     * Sprawdza czy logowanie jest zablokowane
+     * 
+     * @return bool True jeśli zablokowane
+     */
+    private function isLoginBlocked(): bool
+    {
+        if (!isset($_SESSION['login_blocked_until'])) {
+            return false;
+        }
+        
+        // Sprawdź czy blokada jeszcze trwa
+        if (time() < $_SESSION['login_blocked_until']) {
+            return true;
+        }
+        
+        // Blokada wygasła - wyczyść
+        $this->resetLoginAttempts();
+        return false;
+    }
+    
+    /**
+     * Zwraca pozostały czas blokady w sekundach
+     * 
+     * @return int Liczba sekund do końca blokady
+     */
+    private function getRemainingBlockTime(): int
+    {
+        if (!isset($_SESSION['login_blocked_until'])) {
+            return 0;
+        }
+        
+        $remaining = $_SESSION['login_blocked_until'] - time();
+        return max(0, $remaining);
+    }
+    
+    /**
+     * Resetuje licznik nieudanych prób logowania
+     */
+    private function resetLoginAttempts(): void
+    {
+        unset($_SESSION['login_attempts']);
+        unset($_SESSION['first_attempt_time']);
+        unset($_SESSION['login_blocked_until']);
     }
 }
