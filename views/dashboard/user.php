@@ -66,14 +66,22 @@
             </div>
         <?php else: ?>
             <div class="rooms-grid">
-                <?php foreach ($rooms as $room): 
-                    // Randomize status for visual demo purposes
-                    // TODO: Replace with real DB check in the future
-                    $isAvailable = true; 
-                    // Simple mock logic
-                    if ($room->getId() % 2 != 0) $isAvailable = false; 
-
-                    $status = $isAvailable ? 'available' : 'occupied';
+                <?php foreach ($rooms as $roomData): 
+                    // Rozpakuj dane
+                    $room = $roomData['room'];
+                    $isOccupied = $roomData['is_occupied'];
+                    $nextAvailable = $roomData['next_available'];
+                    
+                    // Status
+                    $status = $isOccupied ? 'occupied' : 'available';
+                    
+                    // Formatowanie czasu następnej dostępności
+                    $nextAvailableText = 'Now';
+                    if ($isOccupied && $nextAvailable) {
+                        // Konwertuj z formatu H:i:s na H:i
+                        $time = substr($nextAvailable, 0, 5);
+                        $nextAvailableText = date('g:i A', strtotime($time));
+                    }
                     
                     $icons = ['🏢', '💡', '👔', '🎨', '🤝', '📚'];
                     $icon = $icons[array_rand($icons)];
@@ -98,7 +106,7 @@
                     </div>
 
                     <div>
-                        <?php if($isAvailable): ?>
+                        <?php if(!$isOccupied): ?>
                             <span class="status-badge status-available">Available</span>
                         <?php else: ?>
                             <span class="status-badge status-occupied">Occupied</span>
@@ -106,7 +114,7 @@
                     </div>
 
                     <div class="next-available">
-                        Next available: <strong><?= $isAvailable ? 'Now' : '4:30 PM' ?></strong>
+                        Next available: <strong><?= htmlspecialchars($nextAvailableText) ?></strong>
                     </div>
 
                     <div class="tags">

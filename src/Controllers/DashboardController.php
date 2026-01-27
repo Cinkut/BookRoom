@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Repository\RoomRepository;
+use Repository\BookingRepository;
 use Security\CsrfProtection;
 
 /**
@@ -14,11 +15,16 @@ class DashboardController
 {
     private RoomRepository $roomRepository;
     private \Repository\UserRepository $userRepository;
+    private BookingRepository $bookingRepository;
 
     public function __construct()
     {
         $this->roomRepository = new RoomRepository();
         $this->userRepository = new \Repository\UserRepository();
+        
+        // Inicjalizacja BookingRepository
+        $db = \Database::getInstance()->getConnection();
+        $this->bookingRepository = new BookingRepository($db);
     }
 
     /**
@@ -26,8 +32,25 @@ class DashboardController
      */
     public function index(): void
     {
-        // Pobierz listę pokoi, aby wyświetlić je na dashboardzie
+        // Pobierz listę pokoi
         $rooms = $this->roomRepository->getAllRooms();
+        
+        // Dla każdego pokoju sprawdź dostępność w czasie rzeczywistym
+        $roomsWithAvailability = [];
+        foreach ($rooms as $room) {
+            $roomId = $room->getId();
+            $isOccupied = $this->bookingRepository->isRoomOccupiedNow($roomId);
+            $nextAvailable = $this->bookingRepository->getNextAvailableTime($roomId);
+            
+            $roomsWithAvailability[] = [
+                'room' => $room,
+                'is_occupied' => $isOccupied,
+                'next_available' => $nextAvailable
+            ];
+        }
+        
+        // Przekaż dane do widoku
+        $rooms = $roomsWithAvailability;
         
         require_once __DIR__ . '/../../views/dashboard/user.php';
     }
