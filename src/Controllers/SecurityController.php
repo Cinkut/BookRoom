@@ -243,6 +243,17 @@ class SecurityController
         $_SESSION['login_attempts']++;
         $attempts = $_SESSION['login_attempts'];
         
+        // Logowanie nieudanej próby (bez hasła!)
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+        error_log(sprintf(
+            "[SECURITY] Failed login attempt #%d for email: %s | IP: %s | User-Agent: %s",
+            $attempts,
+            $email,
+            $ip,
+            $userAgent
+        ));
+        
         // Progresywne opóźnienie (rate limiting)
         // 1-2 próby: 1s, 3-4 próby: 2s, 5+ prób: 3s
         if ($attempts >= 5) {
@@ -256,6 +267,13 @@ class SecurityController
         // Blokada czasowa po 5 nieudanych próbach
         if ($attempts >= 5) {
             $_SESSION['login_blocked_until'] = time() + 300; // 5 minut blokady
+            
+            // Logowanie blokady konta
+            error_log(sprintf(
+                "[SECURITY] Account temporarily blocked for email: %s | IP: %s | Duration: 5 minutes",
+                $email,
+                $ip
+            ));
         }
     }
     
