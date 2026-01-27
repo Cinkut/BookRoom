@@ -195,4 +195,33 @@ class BookingRepository
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['end_time'] ?? null;
     }
+    
+    /**
+     * Pobiera wszystkie rezerwacje dla danej sali i daty
+     * 
+     * @param int $roomId ID sali
+     * @param string $date Data w formacie Y-m-d
+     * @return array Lista rezerwacji
+     */
+    public function getBookingsForDate(int $roomId, string $date): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                id,
+                start_time,
+                end_time,
+                status
+            FROM bookings
+            WHERE room_id = :room_id
+              AND date = :date
+              AND status = 'confirmed'
+            ORDER BY start_time ASC
+        ");
+        
+        $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->bindParam(':date', $date);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

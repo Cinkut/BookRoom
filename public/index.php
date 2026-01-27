@@ -45,6 +45,9 @@ $router->get('/rooms/{id}', 'RoomController@show', ['auth']);
 $router->get('/rooms/{id}/book', 'RoomController@book', ['auth']);
 $router->post('/rooms/{id}/book', 'RoomController@processBook', ['auth']);
 
+// === API Routes ===
+$router->get('/api/rooms/{id}/bookings', 'ApiController@getRoomBookings', ['auth']);
+
 // === User Profile Routes ===
 $router->get('/profile', 'ProfileController@index', ['auth']);
 $router->post('/bookings/cancel', 'ProfileController@cancelBooking', ['auth']);

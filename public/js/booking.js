@@ -141,8 +141,133 @@ document.addEventListener('DOMContentLoaded', function() {
         if (summaryValue) {
             summaryValue.textContent = dateInput.value;
         }
+        
+        // Fetch availability for selected date
+        fetchAvailability(dateInput.value);
     }
     
     // Initial summary update
     updateSummary();
+    
+    // --- Real-time Availability Checking ---
+    let currentBookings = [];
+    
+    async function fetchAvailability(date) {
+        if (!window.ROOM_ID || !date) return;
+        
+        const availabilitySection = document.getElementById('availability-section');
+        const occupiedSlots = document.getElementById('occupied-slots');
+        
+        try {
+            const response = await fetch(`/api/rooms/${window.ROOM_ID}/bookings?date=${date}`);
+            if (!response.ok) throw new Error('Failed to fetch availability');
+            
+            const data = await response.json();
+            currentBookings = data.bookings || [];
+            
+            // Display occupied slots
+            if (currentBookings.length === 0) {
+                occupiedSlots.innerHTML = '<div style="text-align: center; padding: 12px; color: #10b981;">✓ No bookings for this date</div>';
+            } else {
+                let html = '';
+                currentBookings.forEach(booking => {
+                    html += `
+                        <div style="background: #FEF2F2; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid #EF4444;">
+                            <strong>${booking.start_time}</strong> - <strong>${booking.end_time}</strong>
+                        </div>
+                    `;
+                });
+                occupiedSlots.innerHTML = html;
+            }
+            
+            availabilitySection.style.display = 'block';
+            
+            // Check for conflicts with current selection
+            checkTimeConflict();
+            
+        } catch (error) {
+            console.error('Error fetching availability:', error);
+            occupiedSlots.innerHTML = '<div style="text-align: center; padding: 12px; color: #ef4444;">Failed to load availability</div>';
+        }
+    }
+    
+    // Time inputs
+    const startTimeInput = document.querySelector('input[name="start_time"]');
+    const endTimeInput = document.querySelector('input[name="end_time"]');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const conflictWarning = document.getElementById('conflict-warning');
+    const conflictMessage = document.getElementById('conflict-message');
+    
+    // Check for conflicts whenever time changes
+    if (startTimeInput) {
+        startTimeInput.addEventListener('change', checkTimeConflict);
+    }
+    if (endTimeInput) {
+        endTimeInput.addEventListener('change', checkTimeConflict);
+    }
+    
+    function checkTimeConflict() {
+        if (!startTimeInput || !endTimeInput || currentBookings.length === 0) {
+            hideConflictWarning();
+            return;
+        }
+        
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        
+        if (!startTime || !endTime) {
+            hideConflictWarning();
+            return;
+        }
+        
+        // Validate end time is after start time
+        if (endTime <= startTime) {
+            showConflictWarning('End time must be after start time');
+            return;
+        }
+        
+        // Check for overlaps with existing bookings
+        for (const booking of currentBookings) {
+            const bookingStart = booking.start_time;
+            const bookingEnd = booking.end_time;
+            
+            // Check if times overlap
+            // Overlap occurs if: (start < bookingEnd) AND (end > bookingStart)
+            if (startTime < bookingEnd && endTime > bookingStart) {
+                showConflictWarning(`This time conflicts with an existing booking (${bookingStart} - ${bookingEnd})`);
+                return;
+            }
+        }
+        
+        // No conflicts
+        hideConflictWarning();
+    }
+    
+    function showConflictWarning(message) {
+        if (conflictWarning && conflictMessage) {
+            conflictMessage.textContent = message;
+            conflictWarning.style.display = 'block';
+            
+            // Disable submit button
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.style.opacity = '0.5';
+                submitButton.style.cursor = 'not-allowed';
+            }
+        }
+    }
+    
+    function hideConflictWarning() {
+        if (conflictWarning) {
+            conflictWarning.style.display = 'none';
+            
+            // Enable submit button
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.style.opacity = '1';
+                submitButton.style.cursor = 'pointer';
+            }
+        }
+    }
 });
+

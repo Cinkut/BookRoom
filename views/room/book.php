@@ -128,11 +128,31 @@
                         <span class="summary-label">Date:</span>
                         <span class="summary-value date-display"><?= date('Y-m-d') ?></span>
                     </div>
+                    
+                    <!-- Availability Timeline -->
+                    <div id="availability-section" style="margin-top: 20px; display: none;">
+                        <div class="summary-header" style="margin-bottom: 12px;">Occupied Time Slots</div>
+                        <div id="occupied-slots" style="font-size: 13px; color: #6b7280;">
+                            <div style="text-align: center; padding: 12px; color: #9ca3af;">
+                                Loading...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conflict Warning -->
+                    <div id="conflict-warning" style="display: none; background: #FEE2E2; color: #991B1B; padding: 12px; border-radius: 6px; margin-top: 16px; font-size: 13px;">
+                        ⚠️ <strong>Time Conflict!</strong><br>
+                        <span id="conflict-message"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
+    <script>
+        // Pass room ID to JavaScript
+        window.ROOM_ID = <?= $room['id'] ?>;
+    </script>
     <script src="/js/booking.js"></script>
 </body>
 </html>
