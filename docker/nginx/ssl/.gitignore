@@ -1,0 +1,8 @@
+# Ignoruj certyfikaty SSL (generowane lokalnie)
+*.key
+*.crt
+*.pem
+
+# Zachowaj skrypty i dokumentację
+!generate-cert.sh
+!README.md

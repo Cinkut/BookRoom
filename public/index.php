@@ -14,7 +14,7 @@ require_once __DIR__ . '/../src/Autoload.php';
 // === 2. Konfiguracja i start bezpiecznej sesji ===
 // Security Bingo: Bezpieczne flagi sesji
 ini_set('session.cookie_httponly', 1);  // HttpOnly - ochrona przed XSS
-ini_set('session.cookie_secure', 0);    // Secure - tylko HTTPS (w produkcji ustaw na 1)
+ini_set('session.cookie_secure', 1);    // Secure - tylko HTTPS
 ini_set('session.cookie_samesite', 'Strict'); // SameSite - ochrona przed CSRF
 ini_set('session.use_strict_mode', 1);  // Strict mode - odrzucanie niezainicjowanych ID
 
