@@ -148,6 +148,13 @@ class SecurityController
         $_SESSION['logged_in'] = true;
         $_SESSION['login_time'] = time();
         
+        // Sprawdź czy użytkownik musi zmienić hasło
+        if ($user['must_change_password'] === true || $user['must_change_password'] === 't') {
+            $_SESSION['info'] = 'Musisz ustawić nowe hasło przed kontynuowaniem.';
+            header('Location: /change-password');
+            exit;
+        }
+        
         // Komunikat sukcesu
         $_SESSION['success'] = 'Zalogowano pomyślnie!';
         

@@ -142,7 +142,10 @@ class DashboardController
         $userId = $this->userRepository->create($email, $passwordHash, $roleId);
         
         if ($userId) {
-            $_SESSION['success'] = 'Użytkownik został utworzony pomyślnie.';
+            // Ustaw flagę wymuszającą zmianę hasła przy pierwszym logowaniu
+            $this->userRepository->setMustChangePassword($userId, true);
+            
+            $_SESSION['success'] = 'Użytkownik został utworzony pomyślnie. Przy pierwszym logowaniu będzie musiał zmienić hasło.';
         } else {
             $_SESSION['error'] = 'Nie udało się utworzyć użytkownika.';
         }

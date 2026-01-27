@@ -36,6 +36,10 @@ $router->get('/login', 'SecurityController@showLogin');
 $router->post('/login', 'SecurityController@login');
 $router->get('/logout', 'SecurityController@logout');
 
+// === Password Change Routes ===
+$router->get('/change-password', 'ChangePasswordController@showForm', ['auth']);
+$router->post('/change-password', 'ChangePasswordController@changePassword', ['auth']);
+
 
 // === Dashboard Routes (wymaga logowania) ===
 $router->get('/dashboard', 'DashboardController@index', ['auth']);

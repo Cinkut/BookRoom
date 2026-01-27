@@ -81,6 +81,7 @@ class UserRepository
                     u.email,
                     u.password,
                     u.role_id,
+                    u.must_change_password,
                     u.created_at,
                     r.name AS role_name
                 FROM users u
@@ -322,6 +323,55 @@ class UserRepository
         } catch (PDOException $e) {
             error_log("UserRepository::countByRole - Error: " . $e->getMessage());
             return 0;
+        }
+    }
+    
+    /**
+     * Ustaw flagę wymuszającą zmianę hasła
+     * 
+     * @param int $userId ID użytkownika
+     * @param bool $mustChange True jeśli musi zmienić hasło
+     * @return bool True jeśli aktualizacja powiodła się
+     */
+    public function setMustChangePassword(int $userId, bool $mustChange): bool
+    {
+        try {
+            $sql = "UPDATE users SET must_change_password = :must_change WHERE id = :id";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':must_change', $mustChange, PDO::PARAM_BOOL);
+            $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+            
+            return $stmt->execute();
+            
+        } catch (PDOException $e) {
+            error_log("UserRepository::setMustChangePassword - Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Sprawdź czy użytkownik musi zmienić hasło
+     * 
+     * @param int $userId ID użytkownika
+     * @return bool True jeśli musi zmienić hasło
+     */
+    public function mustChangePassword(int $userId): bool
+    {
+        try {
+            $sql = "SELECT must_change_password FROM users WHERE id = :id";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $result = $stmt->fetch();
+            
+            return (bool)($result['must_change_password'] ?? false);
+            
+        } catch (PDOException $e) {
+            error_log("UserRepository::mustChangePassword - Error: " . $e->getMessage());
+            return false;
         }
     }
 }
