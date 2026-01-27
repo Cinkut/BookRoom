@@ -20,7 +20,7 @@ class DashboardController
     public function __construct()
     {
         $this->roomRepository = new RoomRepository();
-        $this->userRepository = new \Repository\UserRepository();
+        $this->userRepository = \Repository\UserRepository::getInstance();
         
         // Inicjalizacja BookingRepository
         $db = \Database::getInstance()->getConnection();
@@ -96,19 +96,42 @@ class DashboardController
             exit;
         }
 
-        $email = $_POST['email'] ?? '';
+        $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $roleId = (int)($_POST['role_id'] ?? 2); // Default to User
 
+        // Walidacja długości email (max 255 znaków)
+        if (strlen($email) > 255) {
+            $_SESSION['error'] = 'Email jest zbyt długi (max 255 znaków).';
+            header('Location: /admin/dashboard');
+            exit;
+        }
+
         // Validation
         if (empty($email) || empty($password)) {
-            // TODO: Error message handling
-            header('Location: /admin/dashboard?error=missing_fields');
+            $_SESSION['error'] = 'Email i hasło są wymagane.';
+            header('Location: /admin/dashboard');
+            exit;
+        }
+        
+        // Walidacja formatu email
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'] = 'Niepoprawny format adresu email.';
+            header('Location: /admin/dashboard');
+            exit;
+        }
+
+        // Walidacja złożoności hasła
+        $passwordValidation = \Security\PasswordValidator::validate($password);
+        if (!$passwordValidation['valid']) {
+            $_SESSION['error'] = implode(' ', $passwordValidation['errors']);
+            header('Location: /admin/dashboard');
             exit;
         }
 
         if ($this->userRepository->emailExists($email)) {
-            header('Location: /admin/dashboard?error=email_exists');
+            $_SESSION['error'] = 'Użytkownik z tym adresem email już istnieje.';
+            header('Location: /admin/dashboard');
             exit;
         }
 
@@ -116,9 +139,15 @@ class DashboardController
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
         
         // Create
-        $this->userRepository->create($email, $passwordHash, $roleId);
+        $userId = $this->userRepository->create($email, $passwordHash, $roleId);
+        
+        if ($userId) {
+            $_SESSION['success'] = 'Użytkownik został utworzony pomyślnie.';
+        } else {
+            $_SESSION['error'] = 'Nie udało się utworzyć użytkownika.';
+        }
 
-        header('Location: /admin/dashboard?success=user_created');
+        header('Location: /admin/dashboard');
         exit;
     }
     
