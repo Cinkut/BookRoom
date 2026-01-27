@@ -25,4 +25,7 @@ Thumbs.db
 public/test-*.php
 test-*.php
 
+# Pliki PDF
+*.pdf
+
 rules.md
