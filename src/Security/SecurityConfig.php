@@ -12,23 +12,30 @@ class SecurityConfig
 {
     /**
      * Wymusza HTTPS dla całej aplikacji
-     * Przekierowuje HTTP na HTTPS jeśli nie jest lokalnym środowiskiem
+     * 
+     * W środowisku lokalnym Nginx sam przekierowuje HTTP->HTTPS (port 80->443).
+     * Ta funkcja wymusza HTTPS tylko w produkcji (nie-localhost).
      */
     public static function enforceHttps(): void
     {
-        // Pomiń wymuszenie HTTPS w środowisku lokalnym/dockerze
-        $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8080']);
+        // Sprawdź czy to localhost
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $isLocal = in_array($host, ['localhost', '127.0.0.1', 'localhost:8080', 'localhost:8443']);
         
-        // Sprawdź czy połączenie jest przez HTTP (nie HTTPS)
+        // Dla localhost pomiń - Nginx sam przekieruje HTTP->HTTPS
+        if ($isLocal) {
+            return;
+        }
+        
+        // W produkcji wymuszaj HTTPS
         $isHttps = (
             (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
             (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
             (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
         );
         
-        // Jeśli nie HTTPS i nie localhost, przekieruj
-        if (!$isHttps && !$isLocal) {
-            $redirectUrl = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . ($_SERVER['REQUEST_URI'] ?? '/');
+        if (!$isHttps) {
+            $redirectUrl = 'https://' . $host . ($_SERVER['REQUEST_URI'] ?? '/');
             header('Location: ' . $redirectUrl, true, 301);
             exit;
         }
@@ -45,9 +52,16 @@ class SecurityConfig
             return;
         }
         
+        // Sprawdź czy to środowisko lokalne
+        $isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', 'localhost:8080', 'localhost:8443']);
+        
         // Konfiguracja bezpiecznej sesji
         ini_set('session.cookie_httponly', '1');  // HttpOnly - ochrona przed XSS
-        ini_set('session.cookie_secure', '1');    // Secure - tylko HTTPS
+        
+        // Secure - tylko HTTPS (wyłączone dla localhost, żeby umożliwić testowanie)
+        // W produkcji ZAWSZE włączone (bo nie będzie localhost)
+        ini_set('session.cookie_secure', $isLocal ? '0' : '1');
+        
         ini_set('session.cookie_samesite', 'Strict'); // SameSite - ochrona przed CSRF
         ini_set('session.use_strict_mode', '1');  // Strict mode - odrzucanie niezainicjowanych ID
         ini_set('session.use_only_cookies', '1'); // Tylko cookies (nie URL)
