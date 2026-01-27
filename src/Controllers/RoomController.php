@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Repository\RoomRepository;
+use Security\CsrfProtection;
 
 /**
  * RoomController
@@ -82,6 +83,9 @@ class RoomController
             return;
         }
 
+        // Generuj token CSRF dla formularza rezerwacji
+        $csrfToken = CsrfProtection::generateToken('booking');
+
         require_once __DIR__ . '/../../views/room/book.php';
     }
 
@@ -90,6 +94,12 @@ class RoomController
      */
     public function processBook(array $params): void
     {
+        // Weryfikacja tokena CSRF
+        if (!CsrfProtection::validateToken('booking')) {
+            http_response_code(403);
+            die('Invalid CSRF token. Please try again.');
+        }
+        
         $roomId = (int)$params['id'];
         $userId = $_SESSION['user']['id'] ?? 0; // Powinno być zawsze ustawione dzięki sesji
 

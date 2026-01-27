@@ -80,6 +80,9 @@
                 </div>
                 <div class="form-content">
                     <form action="/admin/users/create" method="POST">
+                        <!-- CSRF Protection -->
+                        <?php echo Security\CsrfProtection::getTokenField('admin_create_user'); ?>
+                        
                         <div class="form-group">
                             <label class="form-label">Email Address</label>
                             <input type="email" name="email" class="form-input" placeholder="user@example.com" required>

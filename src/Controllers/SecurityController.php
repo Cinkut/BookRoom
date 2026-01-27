@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Repository\UserRepository;
+use Security\CsrfProtection;
 
 /**
  * SecurityController
@@ -36,6 +37,9 @@ class SecurityController
             exit;
         }
         
+        // Generuj token CSRF dla formularza logowania
+        $csrfToken = CsrfProtection::generateToken('login');
+        
         require_once __DIR__ . '/../../views/security/login.php';
     }
     
@@ -45,6 +49,7 @@ class SecurityController
      * Weryfikuje dane logowania i tworzy sesję użytkownika.
      * 
      * Security features:
+     * - CSRF token validation (zapobieganie atakom CSRF)
      * - password_verify() dla hashów bcrypt
      * - session_regenerate_id() po zalogowaniu (zapobieganie session fixation)
      * - Walidacja danych wejściowych
@@ -53,6 +58,13 @@ class SecurityController
     {
         // Sprawdź czy żądanie to POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /login');
+            exit;
+        }
+        
+        // Weryfikacja tokena CSRF
+        if (!CsrfProtection::validateToken('login')) {
+            $_SESSION['error'] = 'Nieprawidłowy token bezpieczeństwa. Spróbuj ponownie.';
             header('Location: /login');
             exit;
         }
@@ -128,6 +140,9 @@ class SecurityController
      */
     public function logout(): void
     {
+        // Wyczyść wszystkie tokeny CSRF
+        CsrfProtection::clearAllTokens();
+        
         // Usunięcie wszystkich zmiennych sesji
         $_SESSION = [];
         

@@ -37,6 +37,8 @@
             </div>
 
             <form action="/rooms/<?= $room['id'] ?>/book" method="POST">
+                <!-- CSRF Protection -->
+                <?php echo Security\CsrfProtection::getTokenField('booking'); ?>
                 
                 <div class="form-group">
                     <label class="form-label">Select Date</label>

@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Repository\RoomRepository;
+use Security\CsrfProtection;
 
 /**
  * DashboardController
@@ -44,6 +45,9 @@ class DashboardController
             exit;
         }
 
+        // Generuj token CSRF dla formularza tworzenia użytkownika
+        $csrfToken = CsrfProtection::generateToken('admin_create_user');
+
         $allUsers = $this->userRepository->findAll();
         require_once __DIR__ . '/../../views/dashboard/admin.php';
     }
@@ -59,6 +63,12 @@ class DashboardController
         if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
             http_response_code(403);
             die('Access Denied');
+        }
+
+        // Weryfikacja tokena CSRF
+        if (!CsrfProtection::validateToken('admin_create_user')) {
+            header('Location: /admin/dashboard?error=invalid_csrf');
+            exit;
         }
 
         $email = $_POST['email'] ?? '';

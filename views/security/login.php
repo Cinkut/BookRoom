@@ -41,6 +41,9 @@
             
             <!-- Formularz logowania -->
             <form method="POST" action="/login" class="auth-form">
+                <!-- CSRF Protection -->
+                <?php echo Security\CsrfProtection::getTokenField('login'); ?>
+                
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input 
