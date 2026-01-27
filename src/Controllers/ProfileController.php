@@ -2,6 +2,8 @@
 
 namespace Controllers;
 
+use Security\CsrfProtection;
+
 /**
  * ProfileController
  * 
@@ -52,7 +54,7 @@ class ProfileController
                 'room_name' => $b['room_name'],
                 'room_id' => $b['room_id'],
                 'title' => 'Meeting', // W bazie nie mamy kolumny 'title', dajemy placeholder lub 'Booking'
-                'date' => $dateStr,
+                'date' => $b['date'], // Oryginalna data dla widoku
                 'time' => $timeStr,
                 'attendees' => 'N/A', // Nie zapisujemy attendees w bazie, placeholder
                 'status' => $b['status']
@@ -67,7 +69,59 @@ class ProfileController
             'upcoming' => count($upcomingBookings),
             'completed' => 12 // Mock value, w przyszłości dodać metodę getPastBookings
         ];
+        
+        // Generuj token CSRF dla anulowania rezerwacji
+        CsrfProtection::generateToken('cancel_booking');
 
         require_once __DIR__ . '/../../views/user/profile.php';
+    }
+    
+    /**
+     * Anulowanie rezerwacji
+     */
+    public function cancelBooking(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Sprawdź czy użytkownik jest zalogowany
+        if (!isset($_SESSION['user'])) {
+            http_response_code(403);
+            die('Access Denied');
+        }
+        
+        // Weryfikacja tokena CSRF
+        if (!CsrfProtection::validateToken('cancel_booking')) {
+            header('Location: /profile?error=invalid_csrf');
+            exit;
+        }
+        
+        $bookingId = (int)($_POST['booking_id'] ?? 0);
+        $userId = $_SESSION['user']['id'];
+        
+        // Walidacja
+        if ($bookingId <= 0) {
+            header('Location: /profile?error=invalid_booking_id');
+            exit;
+        }
+        
+        // Sprawdź czy rezerwacja istnieje i należy do użytkownika
+        $booking = $this->bookingRepository->getBookingById($bookingId);
+        if (!$booking) {
+            header('Location: /profile?error=booking_not_found');
+            exit;
+        }
+        
+        if ($booking['user_id'] !== $userId) {
+            header('Location: /profile?error=not_your_booking');
+            exit;
+        }
+        
+        // Anuluj rezerwację
+        if ($this->bookingRepository->cancelBooking($bookingId, $userId)) {
+            header('Location: /profile?success=booking_cancelled');
+        } else {
+            header('Location: /profile?error=cancel_failed');
+        }
+        exit;
     }
 }

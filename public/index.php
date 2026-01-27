@@ -47,6 +47,7 @@ $router->post('/rooms/{id}/book', 'RoomController@processBook', ['auth']);
 
 // === User Profile Routes ===
 $router->get('/profile', 'ProfileController@index', ['auth']);
+$router->post('/bookings/cancel', 'ProfileController@cancelBooking', ['auth']);
 
 // === Dispatch - uruchom odpowiedni kontroler ===
 $router->dispatch();

@@ -46,6 +46,63 @@ class BookingRepository
 
         return $stmt->execute();
     }
+    
+    /**
+     * Anuluje rezerwację
+     * 
+     * @param int $bookingId ID rezerwacji
+     * @param int $userId ID użytkownika (dla weryfikacji właściciela)
+     * @return bool True jeśli anulowanie powiodło się
+     */
+    public function cancelBooking(int $bookingId, int $userId): bool
+    {
+        // Sprawdź czy użytkownik jest właścicielem rezerwacji
+        $stmt = $this->pdo->prepare("
+            UPDATE bookings
+            SET status = 'cancelled'
+            WHERE id = :booking_id
+              AND user_id = :user_id
+              AND status = 'confirmed'
+        ");
+        
+        $stmt->bindParam(':booking_id', $bookingId, PDO::PARAM_INT);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        
+        return $stmt->execute() && $stmt->rowCount() > 0;
+    }
+    
+    /**
+     * Pobiera szczegóły rezerwacji po ID
+     * 
+     * @param int $bookingId ID rezerwacji
+     * @return array|null Dane rezerwacji lub null
+     */
+    public function getBookingById(int $bookingId): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                b.id,
+                b.user_id,
+                b.room_id,
+                b.date,
+                b.start_time,
+                b.end_time,
+                b.status,
+                b.created_at,
+                r.name as room_name,
+                u.email as user_email
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN users u ON b.user_id = u.id
+            WHERE b.id = :booking_id
+        ");
+        
+        $stmt->bindParam(':booking_id', $bookingId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
 
     /**
      * Pobiera przyszłe rezerwacje użytkownika.

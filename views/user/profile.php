@@ -267,6 +267,34 @@
                     <button class="tab-btn">History</button>
                 </div>
             </div>
+            
+            <?php if (isset($_GET['success'])): ?>
+                <?php
+                $successMessages = [
+                    'booking_cancelled' => 'Booking cancelled successfully!'
+                ];
+                $message = $successMessages[$_GET['success']] ?? 'Operation successful!';
+                ?>
+                <div style="background: #D1FAE5; color: #065F46; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px;">
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['error'])): ?>
+                <?php
+                $errorMessages = [
+                    'invalid_csrf' => 'Invalid security token. Please try again.',
+                    'invalid_booking_id' => 'Invalid booking ID.',
+                    'booking_not_found' => 'Booking not found.',
+                    'not_your_booking' => 'You can only cancel your own bookings.',
+                    'cancel_failed' => 'Failed to cancel booking. It may have already been cancelled.'
+                ];
+                $message = $errorMessages[$_GET['error']] ?? 'An error occurred: ' . htmlspecialchars($_GET['error']);
+                ?>
+                <div style="background: #FEE2E2; color: #991B1B; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px;">
+                    <?= $message ?>
+                </div>
+            <?php endif; ?>
 
             <?php if (empty($upcomingBookings)): ?>
                 <div class="empty-state">
@@ -306,6 +334,13 @@
                         </div>
                         <div>
                             <span class="status-badge status-available" style="margin-right: 12px; background: #ECFDF5; color: #047857;">Confirmed</span>
+                            
+                            <!-- Cancel Button -->
+                            <form action="/bookings/cancel" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                <?php echo Security\CsrfProtection::getTokenField('cancel_booking'); ?>
+                                <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                <button type="submit" class="btn-cancel">Cancel</button>
+                            </form>
                         </div>
                     </div>
                     <?php endforeach; ?>
