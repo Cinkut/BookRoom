@@ -58,6 +58,70 @@
             font-size: 16px;
             margin-bottom: 8px;
         }
+        
+        /* Password Strength Meter */
+        .password-strength-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .strength-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .strength-text {
+            color: #475569;
+            font-weight: 500;
+        }
+        
+        .strength-value {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .strength-bar-bg {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Requirement items */
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .req-icon {
+            font-size: 16px;
+            font-weight: bold;
+            min-width: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .requirement.met .req-icon {
+            color: #22c55e;
+        }
+        
+        .requirement.met .req-text {
+            color: #059669;
+        }
     </style>
 </head>
 <body>
@@ -129,13 +193,36 @@
                            required>
                 </div>
                 
+                <!-- Password Strength Meter -->
+                <div class="password-strength-container" id="strengthContainer" style="display: none;">
+                    <div class="strength-label">
+                        <span class="strength-text">Siła hasła:</span>
+                        <span class="strength-value" id="strengthText">-</span>
+                    </div>
+                    <div class="strength-bar-bg">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                </div>
+                
                 <div class="password-requirements">
                     <h3>📋 Wymagania dotyczące hasła:</h3>
-                    <ul>
-                        <li>Minimum 8 znaków</li>
-                        <li>Przynajmniej jedna cyfra (0-9)</li>
-                        <li>Nie używaj łatwego do odgadnięcia hasła</li>
-                        <li>Nie używaj tego samego hasła co wcześniej</li>
+                    <ul id="requirementsList">
+                        <li id="req-length" class="requirement">
+                            <span class="req-icon">○</span>
+                            <span class="req-text">Minimum 8 znaków</span>
+                        </li>
+                        <li id="req-digit" class="requirement">
+                            <span class="req-icon">○</span>
+                            <span class="req-text">Przynajmniej jedna cyfra (0-9)</span>
+                        </li>
+                        <li id="req-lowercase" class="requirement">
+                            <span class="req-icon">○</span>
+                            <span class="req-text">Przynajmniej jedna mała litera (a-z)</span>
+                        </li>
+                        <li id="req-uppercase" class="requirement">
+                            <span class="req-icon">○</span>
+                            <span class="req-text">Przynajmniej jedna wielka litera (A-Z) - opcjonalne</span>
+                        </li>
                     </ul>
                 </div>
                 
@@ -179,21 +266,101 @@
             }
         });
         
-        // Show password strength
-        document.getElementById('new_password').addEventListener('input', function(e) {
-            const password = e.target.value;
+        // Password strength calculation
+        function calculatePasswordStrength(password) {
             let strength = 0;
+            const checks = {
+                length: password.length >= 8,
+                digit: /\d/.test(password),
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                special: /[^a-zA-Z0-9]/.test(password)
+            };
             
-            if (password.length >= 8) strength++;
-            if (password.length >= 12) strength++;
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-            if (/\d/.test(password)) strength++;
-            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            // Scoring
+            if (checks.length) strength += 25;
+            if (password.length >= 12) strength += 10;
+            if (checks.digit) strength += 20;
+            if (checks.lowercase) strength += 20;
+            if (checks.uppercase) strength += 15;
+            if (checks.special) strength += 10;
             
-            const colors = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e'];
-            const labels = ['Bardzo słabe', 'Słabe', 'Średnie', 'Dobre', 'Silne'];
+            return {
+                score: Math.min(strength, 100),
+                checks: checks
+            };
+        }
+        
+        function updateStrengthMeter(password) {
+            const container = document.getElementById('strengthContainer');
+            const bar = document.getElementById('strengthBar');
+            const text = document.getElementById('strengthText');
             
-            // Visual feedback (you could add a strength indicator here)
+            if (!password) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            
+            const result = calculatePasswordStrength(password);
+            const score = result.score;
+            
+            // Update bar width
+            bar.style.width = score + '%';
+            
+            // Color and label based on score
+            let color, label;
+            if (score < 30) {
+                color = '#ef4444';
+                label = 'Bardzo słabe';
+            } else if (score < 50) {
+                color = '#f59e0b';
+                label = 'Słabe';
+            } else if (score < 70) {
+                color = '#eab308';
+                label = 'Średnie';
+            } else if (score < 90) {
+                color = '#84cc16';
+                label = 'Dobre';
+            } else {
+                color = '#22c55e';
+                label = 'Silne';
+            }
+            
+            bar.style.backgroundColor = color;
+            text.textContent = label;
+            text.style.color = color;
+            
+            // Update requirement checkmarks
+            updateRequirementChecks(result.checks);
+        }
+        
+        function updateRequirementChecks(checks) {
+            const requirements = {
+                'req-length': checks.length,
+                'req-digit': checks.digit,
+                'req-lowercase': checks.lowercase,
+                'req-uppercase': checks.uppercase
+            };
+            
+            for (const [id, met] of Object.entries(requirements)) {
+                const element = document.getElementById(id);
+                const icon = element.querySelector('.req-icon');
+                
+                if (met) {
+                    element.classList.add('met');
+                    icon.textContent = '✓';
+                } else {
+                    element.classList.remove('met');
+                    icon.textContent = '○';
+                }
+            }
+        }
+        
+        // Real-time password strength monitoring
+        document.getElementById('new_password').addEventListener('input', function(e) {
+            updateStrengthMeter(e.target.value);
         });
     </script>
 </body>
