@@ -196,10 +196,7 @@ class Router
      */
     private function notFound(): void
     {
-        http_response_code(404);
-        echo '<h1>404 - Page Not Found</h1>';
-        echo '<p>The page <code>' . htmlspecialchars($this->currentPath) . '</code> does not exist.</p>';
-        echo '<a href="/login">Back to login</a>';
+        \Controllers\ErrorController::notFound('Strona nie została znaleziona.');
     }
     
     /**
@@ -209,9 +206,8 @@ class Router
      */
     private function error(string $message): void
     {
-        http_response_code(500);
-        echo '<h1>Router Error</h1>';
-        echo '<p>' . htmlspecialchars($message) . '</p>';
+        error_log("Router Error: " . $message);
+        \Controllers\ErrorController::internalError($message);
     }
     
     /**
