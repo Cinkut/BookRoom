@@ -296,7 +296,6 @@
                 </div>
             <?php endif; ?>
 
-            <?php if (empty($upcomingBookings)): ?>
             <!-- Upcoming Section -->
             <div id="upcoming-section">
                 <?php if (empty($upcomingBookings)): ?>
