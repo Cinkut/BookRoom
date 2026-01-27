@@ -25,11 +25,34 @@
         <!-- Left Col: Users List -->
         <main>
             <?php if (isset($_GET['success'])): ?>
-                <div class="alert alert-success">Operation successful: User created!</div>
+                <?php
+                $successMessages = [
+                    'user_created' => 'User created successfully!',
+                    'user_deleted' => 'User deleted successfully!',
+                    'role_updated' => 'User role updated successfully!'
+                ];
+                $message = $successMessages[$_GET['success']] ?? 'Operation successful!';
+                ?>
+                <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
             <?php endif; ?>
             
             <?php if (isset($_GET['error'])): ?>
-                <div class="alert alert-error">Error: <?= htmlspecialchars($_GET['error']) ?></div>
+                <?php
+                $errorMessages = [
+                    'invalid_csrf' => 'Invalid security token. Please try again.',
+                    'missing_fields' => 'All fields are required.',
+                    'email_exists' => 'Email already exists.',
+                    'invalid_user_id' => 'Invalid user ID.',
+                    'cannot_delete_self' => 'You cannot delete your own account.',
+                    'cannot_change_own_role' => 'You cannot change your own role.',
+                    'user_not_found' => 'User not found.',
+                    'delete_failed' => 'Failed to delete user.',
+                    'update_failed' => 'Failed to update user role.',
+                    'invalid_data' => 'Invalid data provided.'
+                ];
+                $message = $errorMessages[$_GET['error']] ?? 'An error occurred: ' . htmlspecialchars($_GET['error']);
+                ?>
+                <div class="alert alert-error"><?= $message ?></div>
             <?php endif; ?>
 
             <div class="card">
@@ -44,6 +67,7 @@
                             <th>Email</th>
                             <th>Role</th>
                             <th>Joined</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,11 +84,33 @@
                                     <?php endif; ?>
                                 </td>
                                 <td><?= date('M j, Y', strtotime($u['created_at'])) ?></td>
+                                <td>
+                                    <?php if ($u['id'] !== $_SESSION['user']['id']): ?>
+                                        <!-- Change Role Form -->
+                                        <form action="/admin/users/update-role" method="POST" style="display: inline-block; margin-right: 8px;">
+                                            <?php echo Security\CsrfProtection::getTokenField('admin_update_role'); ?>
+                                            <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+                                            <select name="role_id" class="mini-select" onchange="this.form.submit()">
+                                                <option value="2" <?= $u['role_id'] == 2 ? 'selected' : '' ?>>Member</option>
+                                                <option value="1" <?= $u['role_id'] == 1 ? 'selected' : '' ?>>Admin</option>
+                                            </select>
+                                        </form>
+                                        
+                                        <!-- Delete User Form -->
+                                        <form action="/admin/users/delete" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                            <?php echo Security\CsrfProtection::getTokenField('admin_delete_user'); ?>
+                                            <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+                                            <button type="submit" class="btn-delete">Delete</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <span style="color: #9CA3AF; font-size: 12px;">You</span>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4" style="text-align: center; color: #9CA3AF;">No users found.</td>
+                                <td colspan="5" style="text-align: center; color: #9CA3AF;">No users found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

@@ -245,6 +245,30 @@ class UserRepository
     }
     
     /**
+     * Zaktualizuj rolę użytkownika
+     * 
+     * @param int $userId ID użytkownika
+     * @param int $roleId Nowe ID roli (1 = admin, 2 = user)
+     * @return bool True jeśli aktualizacja powiodła się
+     */
+    public function updateRole(int $userId, int $roleId): bool
+    {
+        try {
+            $sql = "UPDATE users SET role_id = :role_id WHERE id = :id";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':role_id', $roleId, PDO::PARAM_INT);
+            $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+            
+            return $stmt->execute();
+            
+        } catch (PDOException $e) {
+            error_log("UserRepository::updateRole - Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Pobierz liczbę użytkowników według roli
      * 
      * @param int $roleId ID roli

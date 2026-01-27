@@ -36,6 +36,8 @@ $router->get('/logout', 'SecurityController@logout');
 $router->get('/dashboard', 'DashboardController@index', ['auth']);
 $router->get('/admin/dashboard', 'DashboardController@admin', ['auth', 'admin']);
 $router->post('/admin/users/create', 'DashboardController@createUser', ['auth', 'admin']);
+$router->post('/admin/users/delete', 'DashboardController@deleteUser', ['auth', 'admin']);
+$router->post('/admin/users/update-role', 'DashboardController@updateUserRole', ['auth', 'admin']);
 
 // === Room Routes ===
 $router->get('/rooms', 'RoomController@index', ['auth']);

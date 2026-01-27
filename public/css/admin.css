@@ -175,6 +175,37 @@ body {
     color: #991B1B;
 }
 
+/* User Management Actions */
+.mini-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.mini-select:hover {
+    border-color: var(--primary);
+}
+
+.btn-delete {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-delete:hover {
+    opacity: 0.9;
+}
+
 @media (max-width: 900px) {
     .container {
         grid-template-columns: 1fr;
