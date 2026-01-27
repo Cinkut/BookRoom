@@ -10,11 +10,11 @@ use PDOException;
  * UserRepository
  * 
  * Warstwa dostępu do danych dla tabeli users.
- * Implementuje wzorzec Repository Pattern - separacja logiki SQL od logiki biznesowej.
+ * Implementuje wzorzec Repository Pattern + Singleton.
  * 
  * Zgodność:
  * - BINGO D1: Zapytania SQL w warstwie Repository (nie w kontrolerach)
- * - RULES.md: Separacja concerns, brak duplikacji kodu
+ * - RULES.md: UserRepository jako Singleton (wymaganie projektu)
  */
 class UserRepository
 {
@@ -24,11 +24,43 @@ class UserRepository
     private PDO $db;
     
     /**
-     * Constructor - inicjalizacja połączenia z bazą
+     * Singleton instance
      */
-    public function __construct()
+    private static ?UserRepository $instance = null;
+    
+    /**
+     * Private constructor - zapobiega bezpośredniemu tworzeniu instancji
+     */
+    private function __construct()
     {
         $this->db = Database::getInstance()->getConnection();
+    }
+    
+    /**
+     * Zapobiega klonowaniu Singletona
+     */
+    private function __clone() {}
+    
+    /**
+     * Zapobiega unserialize Singletona
+     */
+    public function __wakeup()
+    {
+        throw new \Exception("Cannot unserialize singleton");
+    }
+    
+    /**
+     * Zwraca jedyną instancję UserRepository (Singleton)
+     * 
+     * @return UserRepository
+     */
+    public static function getInstance(): UserRepository
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        
+        return self::$instance;
     }
     
     /**

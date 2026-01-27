@@ -23,7 +23,7 @@ class SecurityController
      */
     public function __construct()
     {
-        $this->userRepository = new UserRepository();
+        $this->userRepository = UserRepository::getInstance();
     }
     
     /**
@@ -81,6 +81,19 @@ class SecurityController
         // Pobranie danych z formularza
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
+        
+        // Walidacja długości danych wejściowych (ochrona przed buffer overflow)
+        if (strlen($email) > 255) {
+            $_SESSION['error'] = 'Email jest zbyt długi.';
+            header('Location: /login');
+            exit;
+        }
+        
+        if (strlen($password) > 128) {
+            $_SESSION['error'] = 'Hasło jest zbyt długie.';
+            header('Location: /login');
+            exit;
+        }
         
         // Walidacja podstawowa
         if (empty($email) || empty($password)) {
