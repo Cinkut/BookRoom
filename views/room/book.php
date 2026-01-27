@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book <?= htmlspecialchars($room['name']) ?> - BookRoom</title>
-    <link rel="stylesheet" href="/css/booking-form.css">
+    <link rel="stylesheet" href="/assets/css/booking-form.css">
 
 </head>
 <body>
@@ -146,6 +146,6 @@
         // Pass room ID to JavaScript
         window.ROOM_ID = <?= $room['id'] ?>;
     </script>
-    <script src="/js/booking.js"></script>
+    <script src="/assets/js/booking.js"></script>
 </body>
 </html>

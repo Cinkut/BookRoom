@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($room['name']) ?> - Room Details</title>
-    <link rel="stylesheet" href="/css/room-details.css">
+    <link rel="stylesheet" href="/assets/css/room-details.css">
 </head>
 <body>
 
@@ -127,6 +127,6 @@
     <script>
         window.roomBookings = <?= json_encode($bookings ?? []) ?>;
     </script>
-    <script src="/js/room-details.js"></script>
+    <script src="/assets/js/room-details.js"></script>
 </body>
 </html>

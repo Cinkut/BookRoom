@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conference Rooms - BookRoom</title>
-    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
 <body>
 
@@ -148,6 +148,6 @@
 
     </main>
 
-    <script src="/js/dashboard.js"></script>
+    <script src="/assets/js/dashboard.js"></script>
 </body>
 </html>
