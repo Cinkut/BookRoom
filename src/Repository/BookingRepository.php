@@ -224,4 +224,38 @@ class BookingRepository
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Pobiera historyczne rezerwacje użytkownika (przeszłe i anulowane)
+     * 
+     * @param int $userId ID użytkownika
+     * @return array Lista rezerwacji
+     */
+    public function getPastBookingsByUser(int $userId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                b.id as booking_id,
+                b.room_id,
+                r.name as room_name,
+                b.date,
+                b.start_time,
+                b.end_time,
+                b.status
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            WHERE b.user_id = :user_id
+              AND (
+                  (b.date < CURRENT_DATE) 
+                  OR (b.date = CURRENT_DATE AND b.end_time < CURRENT_TIME)
+                  OR (b.status = 'cancelled')
+              )
+            ORDER BY b.date DESC, b.start_time DESC
+        ");
+        
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

@@ -63,13 +63,31 @@ class ProfileController
             ];
         }
 
+        // Pobierz historyczne rezerwacje
+        $dbHistory = $this->bookingRepository->getPastBookingsByUser($user['id']);
+        $historyBookings = [];
+        foreach ($dbHistory as $b) {
+            $startObj = new \DateTime($b['start_time']);
+            $endObj = new \DateTime($b['end_time']);
+            $timeStr = $startObj->format('g:i A') . ' - ' . $endObj->format('g:i A');
+
+            $historyBookings[] = [
+                'id' => $b['booking_id'],
+                'room_name' => $b['room_name'],
+                'room_id' => $b['room_id'],
+                'title' => 'Meeting',
+                'date' => $b['date'],
+                'time' => $timeStr,
+                'status' => $b['status']
+            ];
+        }
+
         /*
          * Dane do statystyk
-         * Na razie 'completed' to mock, bo nie mamy historii starszej niż 'upcoming' w tej metodzie
          */
         $stats = [
             'upcoming' => count($upcomingBookings),
-            'completed' => 12 // Mock value, w przyszłości dodać metodę getPastBookings
+            'completed' => count($historyBookings)
         ];
 
         require_once __DIR__ . '/../../views/user/profile.php';

@@ -263,8 +263,8 @@
             <div class="section-header">
                 <div style="font-size: 20px; font-weight: 600;">My Bookings</div>
                 <div>
-                    <button class="tab-btn active">Upcoming</button>
-                    <button class="tab-btn">History</button>
+                    <button class="tab-btn active" onclick="switchTab(this, 'upcoming')">Upcoming</button>
+                    <button class="tab-btn" onclick="switchTab(this, 'history')">History</button>
                 </div>
             </div>
             
@@ -297,55 +297,116 @@
             <?php endif; ?>
 
             <?php if (empty($upcomingBookings)): ?>
-                <div class="empty-state">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 16px; opacity: 0.2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <p>No upcoming bookings found.</p>
-                    <a href="/dashboard" class="btn-details" style="display: inline-block; width: auto; padding: 8px 24px; margin-top: 16px;">Book a Room</a>
-                </div>
-            <?php else: ?>
-                <div class="booking-list">
-                    <?php foreach ($upcomingBookings as $booking): ?>
-                    <div class="booking-item">
-                        <div class="date-box">
-                            <?php 
-                                // Parse date for simplified display
-                                $d = new DateTime($booking['date']); 
-                            ?>
-                            <div class="date-month"><?= $d->format('M') ?></div>
-                            <div class="date-day"><?= $d->format('d') ?></div>
-                        </div>
-                        <div class="booking-details">
-                            <div class="booking-title"><?= htmlspecialchars($booking['title']) ?></div>
-                            <div class="booking-meta">
-                                <div class="meta-item">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                    <?= htmlspecialchars($booking['time']) ?>
-                                </div>
-                                <div class="meta-item">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4 8 4v14H5z"></path></svg>
-                                    <?= htmlspecialchars($booking['room_name']) ?>
+            <!-- Upcoming Section -->
+            <div id="upcoming-section">
+                <?php if (empty($upcomingBookings)): ?>
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 16px; opacity: 0.2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <p>No upcoming bookings found.</p>
+                        <a href="/dashboard" class="btn-details" style="display: inline-block; width: auto; padding: 8px 24px; margin-top: 16px;">Book a Room</a>
+                    </div>
+                <?php else: ?>
+                    <div class="booking-list">
+                        <?php foreach ($upcomingBookings as $booking): ?>
+                        <div class="booking-item">
+                            <div class="date-box">
+                                <?php 
+                                    // Parse date for simplified display
+                                    $d = new DateTime($booking['date']); 
+                                ?>
+                                <div class="date-month"><?= $d->format('M') ?></div>
+                                <div class="date-day"><?= $d->format('d') ?></div>
+                            </div>
+                            <div class="booking-details">
+                                <div class="booking-title"><?= htmlspecialchars($booking['title']) ?></div>
+                                <div class="booking-meta">
+                                    <div class="meta-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        <?= htmlspecialchars($booking['time']) ?>
+                                    </div>
+                                    <div class="meta-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4 8 4v14H5z"></path></svg>
+                                        <?= htmlspecialchars($booking['room_name']) ?>
+                                    </div>
                                 </div>
                             </div>
+                            <div>
+                                <span class="status-badge status-available" style="margin-right: 12px; background: #ECFDF5; color: #047857;">Confirmed</span>
+                                
+                                <!-- Cancel Button -->
+                                <form action="/bookings/cancel" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                    <input type="hidden" name="csrf_token" value="<?= $booking['csrf_token'] ?>">
+                                    <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                    <button type="submit" class="btn-cancel">Cancel</button>
+                                </form>
+                            </div>
                         </div>
-                        <div>
-                            <span class="status-badge status-available" style="margin-right: 12px; background: #ECFDF5; color: #047857;">Confirmed</span>
-                            
-                            <!-- Cancel Button -->
-                            <form action="/bookings/cancel" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-                                <input type="hidden" name="csrf_token" value="<?= $booking['csrf_token'] ?>">
-                                <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
-                                <button type="submit" class="btn-cancel">Cancel</button>
-                            </form>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
+
+            <!-- History Section -->
+            <div id="history-section" style="display: none;">
+                <?php if (empty($historyBookings)): ?>
+                    <div class="empty-state">
+                        <p>No past bookings found.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="booking-list">
+                        <?php foreach ($historyBookings as $booking): ?>
+                        <div class="booking-item" style="border-color: #E5E7EB; background: #F9FAFB;">
+                            <div class="date-box" style="background: #E5E7EB; color: #6B7280;">
+                                <?php 
+                                    $d = new DateTime($booking['date']); 
+                                ?>
+                                <div class="date-month"><?= $d->format('M') ?></div>
+                                <div class="date-day"><?= $d->format('d') ?></div>
+                            </div>
+                            <div class="booking-details">
+                                <div class="booking-title" style="color: #6B7280;"><?= htmlspecialchars($booking['title']) ?></div>
+                                <div class="booking-meta">
+                                    <div class="meta-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        <?= htmlspecialchars($booking['time']) ?>
+                                    </div>
+                                    <div class="meta-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4 8 4v14H5z"></path></svg>
+                                        <?= htmlspecialchars($booking['room_name']) ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <?php if($booking['status'] === 'cancelled'): ?>
+                                    <span class="status-badge" style="background: #FEF2F2; color: #991B1B;">Cancelled</span>
+                                <?php else: ?>
+                                    <span class="status-badge" style="background: #F3F4F6; color: #6B7280;">Completed</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <script>
+                function switchTab(btn, tabName) {
+                    // Update buttons
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Update sections
+                    document.getElementById('upcoming-section').style.display = 'none';
+                    document.getElementById('history-section').style.display = 'none';
+                    
+                    document.getElementById(tabName + '-section').style.display = 'block';
+                }
+            </script>
         </main>
     </div>
 
