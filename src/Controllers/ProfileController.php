@@ -57,7 +57,9 @@ class ProfileController
                 'date' => $b['date'], // Oryginalna data dla widoku
                 'time' => $timeStr,
                 'attendees' => 'N/A', // Nie zapisujemy attendees w bazie, placeholder
-                'status' => $b['status']
+                'status' => $b['status'],
+                // Generuj unikalny token CSRF dla każdej rezerwacji
+                'csrf_token' => CsrfProtection::generateToken('cancel_booking_' . $b['booking_id'])
             ];
         }
 
@@ -69,9 +71,6 @@ class ProfileController
             'upcoming' => count($upcomingBookings),
             'completed' => 12 // Mock value, w przyszłości dodać metodę getPastBookings
         ];
-        
-        // Generuj token CSRF dla anulowania rezerwacji
-        CsrfProtection::generateToken('cancel_booking');
 
         require_once __DIR__ . '/../../views/user/profile.php';
     }
@@ -89,14 +88,15 @@ class ProfileController
             die('Access Denied');
         }
         
-        // Weryfikacja tokena CSRF
-        if (!CsrfProtection::validateToken('cancel_booking')) {
+        // Pobierz ID rezerwacji najpierw
+        $bookingId = (int)($_POST['booking_id'] ?? 0);
+        $userId = $_SESSION['user']['id'];
+
+        // Weryfikacja unikalnego tokena CSRF dla tej konkretnej rezerwacji
+        if (!CsrfProtection::validateToken('cancel_booking_' . $bookingId)) {
             header('Location: /profile?error=invalid_csrf');
             exit;
         }
-        
-        $bookingId = (int)($_POST['booking_id'] ?? 0);
-        $userId = $_SESSION['user']['id'];
         
         // Walidacja
         if ($bookingId <= 0) {

@@ -337,7 +337,7 @@
                             
                             <!-- Cancel Button -->
                             <form action="/bookings/cancel" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-                                <?php echo Security\CsrfProtection::getTokenField('cancel_booking'); ?>
+                                <input type="hidden" name="csrf_token" value="<?= $booking['csrf_token'] ?>">
                                 <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
                                 <button type="submit" class="btn-cancel">Cancel</button>
                             </form>
