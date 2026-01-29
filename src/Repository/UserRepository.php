@@ -68,6 +68,7 @@ class UserRepository
      * 
      * Wykorzystywane przy logowaniu - sprawdzenie czy użytkownik istnieje
      * i pobranie jego hasła (hash) oraz roli.
+     * Dodano pobieranie danych profilowych (JOIN).
      * 
      * @param string $email Adres email użytkownika
      * @return array|null Dane użytkownika lub null jeśli nie znaleziono
@@ -83,9 +84,14 @@ class UserRepository
                     u.role_id,
                     u.must_change_password,
                     u.created_at,
-                    r.name AS role_name
+                    r.name AS role_name,
+                    p.first_name,
+                    p.last_name,
+                    p.phone_number,
+                    p.avatar_url
                 FROM users u
                 INNER JOIN roles r ON u.role_id = r.id
+                LEFT JOIN user_profiles p ON u.id = p.user_id
                 WHERE u.email = :email
                 LIMIT 1
             ";
@@ -120,9 +126,14 @@ class UserRepository
                     u.email,
                     u.role_id,
                     u.created_at,
-                    r.name AS role_name
+                    r.name AS role_name,
+                    p.first_name,
+                    p.last_name,
+                    p.phone_number,
+                    p.avatar_url
                 FROM users u
                 INNER JOIN roles r ON u.role_id = r.id
+                LEFT JOIN user_profiles p ON u.id = p.user_id
                 WHERE u.id = :id
                 LIMIT 1
             ";
@@ -174,11 +185,15 @@ class UserRepository
      * @param string $email Adres email
      * @param string $passwordHash Hash hasła (bcrypt)
      * @param int $roleId ID roli (1 = admin, 2 = user)
+     * @param string $firstName Imię (opcjonalne)
+     * @param string $lastName Nazwisko (opcjonalne)
      * @return int|null ID utworzonego użytkownika lub null w przypadku błędu
      */
-    public function create(string $email, string $passwordHash, int $roleId = 2): ?int
+    public function create(string $email, string $passwordHash, int $roleId = 2, string $firstName = '', string $lastName = ''): ?int
     {
         try {
+            $this->db->beginTransaction();
+
             $sql = "
                 INSERT INTO users (email, password, role_id)
                 VALUES (:email, :password, :role_id)
@@ -192,10 +207,28 @@ class UserRepository
             $stmt->execute();
             
             $result = $stmt->fetch();
+            $userId = $result['id'] ?? null;
+
+            if ($userId) {
+                // Utwórz profil dla nowego użytkownika z podanym imieniem i nazwiskiem
+                // Jeśli nie podano, użyj domyślnych (lub pustych)
+                $finalFirstName = empty($firstName) ? 'User' : $firstName;
+                $finalLastName = empty($lastName) ? 'Name' : $lastName;
+                
+                $sqlProfile = "INSERT INTO user_profiles (user_id, first_name, last_name) VALUES (:user_id, :first_name, :last_name)";
+                $stmtProfile = $this->db->prepare($sqlProfile);
+                $stmtProfile->bindParam(':user_id', $userId, PDO::PARAM_INT);
+                $stmtProfile->bindParam(':first_name', $finalFirstName, PDO::PARAM_STR);
+                $stmtProfile->bindParam(':last_name', $finalLastName, PDO::PARAM_STR);
+                $stmtProfile->execute();
+            }
+
+            $this->db->commit();
             
-            return $result['id'] ?? null;
+            return $userId;
             
         } catch (PDOException $e) {
+            $this->db->rollBack();
             error_log("UserRepository::create - Error: " . $e->getMessage());
             return null;
         }
@@ -371,6 +404,60 @@ class UserRepository
             
         } catch (PDOException $e) {
             error_log("UserRepository::mustChangePassword - Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Pobierz profil użytkownika
+     * 
+     * @param int $userId ID użytkownika
+     * @return array|null Dane profilowe lub null
+     */
+    public function getProfile(int $userId): ?array
+    {
+        try {
+            $sql = "SELECT * FROM user_profiles WHERE user_id = :user_id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            $profile = $stmt->fetch();
+            return $profile ?: null;
+        } catch (PDOException $e) {
+            error_log("UserRepository::getProfile - Error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Zaktualizuj profil użytkownika
+     * 
+     * @param int $userId ID użytkownika
+     * @param array $data Tablica z danymi (first_name, last_name, phone_number)
+     * @return bool True jeśli aktualizacja powiodła się
+     */
+    public function updateProfile(int $userId, array $data): bool
+    {
+        try {
+            $sql = "
+                UPDATE user_profiles 
+                SET 
+                    first_name = :first_name,
+                    last_name = :last_name,
+                    phone_number = :phone_number
+                WHERE user_id = :user_id
+            ";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':first_name', $data['first_name'], PDO::PARAM_STR);
+            $stmt->bindParam(':last_name', $data['last_name'], PDO::PARAM_STR);
+            $stmt->bindParam(':phone_number', $data['phone_number'], PDO::PARAM_STR);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("UserRepository::updateProfile - Error: " . $e->getMessage());
             return false;
         }
     }

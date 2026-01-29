@@ -33,7 +33,17 @@ class ProfileController
             exit;
         }
 
-        $user = $_SESSION['user'];
+        // Pobierz świeże dane użytkownika z bazy, w tym profil
+        // Używamy tego z bazy zamiast z sesji (gdzie dane mogą być stare)
+        $userRepo = \Repository\UserRepository::getInstance();
+        $user = $userRepo->findById($_SESSION['user']['id']);
+
+        // Jeśli użytkownik został usunięty w międzyczasie
+        if (!$user) {
+            session_destroy();
+            header('Location: /login');
+            exit;
+        }
         
         // Pobierz prawdziwe rezerwacje z bazy
         $dbBookings = $this->bookingRepository->getUpcomingBookingByUser($user['id']);
@@ -82,6 +92,9 @@ class ProfileController
             ];
         }
 
+        // Generuj token CSRF dla formularza edycji profilu
+        CsrfProtection::generateToken('update_profile');
+
         /*
          * Dane do statystyk
          */
@@ -91,6 +104,64 @@ class ProfileController
         ];
 
         require_once __DIR__ . '/../../views/user/profile.php';
+    }
+    
+    /**
+     * Aktualizacja profilu (telefon)
+     */
+    public function updateProfile(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Auth check
+        if (!isset($_SESSION['user'])) {
+            header('Location: /login');
+            exit;
+        }
+
+        $userId = $_SESSION['user']['id'];
+
+        // CSRF check
+        if (!CsrfProtection::validateToken('update_profile')) {
+            header('Location: /profile?profile_error=invalid_csrf');
+            exit;
+        }
+
+        $phoneNumber = trim($_POST['phone_number'] ?? '');
+
+        // Walidacja telefonu (dokładnie 9 cyfr)
+        if (!preg_match('/^\d{9}$/', $phoneNumber)) {
+            header('Location: /profile?profile_error=invalid_phone_format');
+            exit;
+        }
+
+        // Pobierz aktualne dane, żeby zachować imię i nazwisko (których nie edytujemy tutaj)
+        $userRepo = \Repository\UserRepository::getInstance();
+        $user = $userRepo->findById($userId);
+        $profile = $userRepo->getProfile($userId);
+
+        if (!$profile) {
+            // Jeśli z jakiegoś powodu profil nie istnieje (np. stary user), stwórz go?
+            // create() w UserRepository tworzy pusty, ale tutaj mamy update.
+            // Ale migracja powinna była stworzyć dla wszystkich.
+            // Załóżmy, że istnieje.
+            header('Location: /profile?profile_error=profile_not_found');
+            exit;
+        }
+
+        // Przygotuj dane do aktualizacji
+        $updateData = [
+            'first_name' => $profile['first_name'], // Zachowaj stare
+            'last_name' => $profile['last_name'],   // Zachowaj stare
+            'phone_number' => $phoneNumber          // Zaktualizuj nowe
+        ];
+
+        if ($userRepo->updateProfile($userId, $updateData)) {
+            header('Location: /profile?profile_success=1');
+        } else {
+            header('Location: /profile?profile_error=update_failed');
+        }
+        exit;
     }
     
     /**

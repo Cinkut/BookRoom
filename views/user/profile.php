@@ -32,12 +32,22 @@
         <!-- Left: Profile Card -->
         <aside class="profile-card">
             <div class="profile-avatar">
-                <?= strtoupper(substr($user['email'], 0, 1)) ?>
+                <?php if (!empty($user['avatar_url'])): ?>
+                    <img src="<?= htmlspecialchars($user['avatar_url']) ?>" alt="Avatar" class="avatar-img">
+                <?php else: ?>
+                    <?= strtoupper(substr($user['first_name'] ?? $user['email'], 0, 1)) ?>
+                <?php endif; ?>
             </div>
             <h2 class="profile-name">
-                <?= htmlspecialchars(explode('@', $user['email'])[0]) ?>
+                <?= htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: htmlspecialchars(explode('@', $user['email'])[0]) ?>
             </h2>
             <div class="profile-email"><?= htmlspecialchars($user['email']) ?></div>
+            
+            <?php if (!empty($user['phone_number'])): ?>
+                <div class="profile-phone text-secondary font-sm mt-4">
+                    <?= htmlspecialchars($user['phone_number']) ?>
+                </div>
+            <?php endif; ?>
 
             <div class="profile-stats">
                 <div class="stat-item">
@@ -58,12 +68,45 @@
                         <?= ($user['role_id'] == 1) ? 'Administrator' : 'Member' ?>
                     </span>
                 </div>
-                <div class="font-sm flex-between">
+                <div class="font-sm flex-between mb-8">
                     <span class="text-secondary">Member Since</span>
                     <span class="font-weight-500">
                         <?= isset($user['created_at']) ? date('M Y', strtotime($user['created_at'])) : 'N/A' ?>
                     </span>
                 </div>
+
+                <!-- Update Profile Form -->
+                <form action="/profile/update" method="POST" class="mt-16 pt-16 border-top">
+                    <?php echo Security\CsrfProtection::getTokenField('update_profile'); ?>
+                    
+                    <div class="form-group mb-8">
+                        <label class="font-xs text-secondary block mb-4">Phone Number</label>
+                        <input type="tel" name="phone_number" class="form-input-sm full-width" 
+                               value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>" 
+                               placeholder="123456789"
+                               pattern="\d{9}"
+                               maxlength="9"
+                               title="Numer telefonu musi składać się z 9 cyfr"
+                               required>
+                    </div>
+
+                    <!-- Hidden fields to preserve name (if we don't want to show inputs for them) or show them as readonly/editable -->
+                    <!-- The user requirement says admin sets name, user sets phone. 
+                         We will send current names as hidden to preserve them if we don't want to make them editable here, 
+                         OR better: make them editable but maybe readonly? 
+                         Let's just make them hidden for now to strictly follow "user fills phone".
+                         Actually, to be safe, let's fetch them in controller so we don't rely on hidden fields that can be manipulated.
+                    -->
+                    
+                    <button type="submit" class="btn-update">Update Contact Info</button>
+                    
+                    <?php if (isset($_GET['profile_success'])): ?>
+                        <div class="font-xs text-success mt-8 text-center">Updated successfully!</div>
+                    <?php endif; ?>
+                    <?php if (isset($_GET['profile_error'])): ?>
+                        <div class="font-xs text-error mt-8 text-center">Update failed.</div>
+                    <?php endif; ?>
+                </form>
             </div>
         </aside>
 

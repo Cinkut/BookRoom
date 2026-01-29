@@ -220,3 +220,36 @@
         grid-template-columns: 1fr;
     }
 }
+
+.btn-update {
+    background: #000000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 500;
+    width: 100%;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 16px;
+    transition: background 0.2s;
+}
+
+.btn-update:hover {
+    background: #374151;
+}
+
+.form-input-sm {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+.form-input-sm:focus {
+    border-color: #000000;
+}

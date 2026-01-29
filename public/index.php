@@ -59,6 +59,7 @@ $router->get('/api/rooms/{id}/bookings', 'ApiController@getRoomBookings', ['auth
 
 // === User Profile Routes ===
 $router->get('/profile', 'ProfileController@index', ['auth']);
+$router->post('/profile/update', 'ProfileController@updateProfile', ['auth']);
 $router->post('/bookings/cancel', 'ProfileController@cancelBooking', ['auth']);
 
 // === Dispatch - uruchom odpowiedni kontroler ===

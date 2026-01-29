@@ -138,8 +138,12 @@ class DashboardController
         // Hashing
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
         
+        // Read names from POST
+        $firstName = trim($_POST['first_name'] ?? '');
+        $lastName = trim($_POST['last_name'] ?? '');
+
         // Create
-        $userId = $this->userRepository->create($email, $passwordHash, $roleId);
+        $userId = $this->userRepository->create($email, $passwordHash, $roleId, $firstName, $lastName);
         
         if ($userId) {
             // Ustaw flagę wymuszającą zmianę hasła przy pierwszym logowaniu

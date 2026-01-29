@@ -130,6 +130,16 @@
                         <?php echo Security\CsrfProtection::getTokenField('admin_create_user'); ?>
                         
                         <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <input type="text" name="first_name" class="form-input" placeholder="e.g. John" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-input" placeholder="e.g. Doe" required>
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label">Email Address</label>
                             <input type="email" name="email" class="form-input" placeholder="user@example.com" required>
                         </div>
