@@ -64,6 +64,13 @@ class RoomController
 
         // Pobierz kalendarz rezerwacji dla tej sali
         $bookings = $this->bookingRepository->getUpcomingBookingsByRoom($id);
+        
+        // Sprawdź dostępność w czasie rzeczywistym
+        $isOccupied = $this->bookingRepository->isRoomOccupiedNow($id);
+        $nextAvailable = null;
+        if ($isOccupied) {
+            $nextAvailable = $this->bookingRepository->getNextAvailableTime($id);
+        }
 
         // Renderuj widok szczegółów
         require_once __DIR__ . '/../../views/room/show.php';

@@ -142,21 +142,28 @@ class BookingRepository
      * Sprawdza czy sala jest zajęta w bieżącej chwili
      * 
      * @param int $roomId ID sali
+     * @param string|null $checkDate Opcjonalna data (domyślnie 'now')
+     * @param string|null $checkTime Opcjonalny czas (domyślnie 'now')
      * @return bool True jeśli sala jest zajęta
      */
-    public function isRoomOccupiedNow(int $roomId): bool
+    public function isRoomOccupiedNow(int $roomId, ?string $checkDate = null, ?string $checkTime = null): bool
     {
+        $date = $checkDate ?? date('Y-m-d');
+        $time = $checkTime ?? date('H:i:s');
+
         $stmt = $this->pdo->prepare("
             SELECT COUNT(*) as count
             FROM bookings
             WHERE room_id = :room_id
-              AND date = CURRENT_DATE
-              AND start_time <= CURRENT_TIME
-              AND end_time > CURRENT_TIME
+              AND date = :date
+              AND start_time <= :time
+              AND end_time > :time
               AND status = 'confirmed'
         ");
         
         $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->bindParam(':date', $date);
+        $stmt->bindParam(':time', $time);
         $stmt->execute();
         
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -167,29 +174,36 @@ class BookingRepository
      * Pobiera czas następnej dostępności sali
      * 
      * @param int $roomId ID sali
+     * @param string|null $checkDate Opcjonalna data (domyślnie 'now')
+     * @param string|null $checkTime Opcjonalny czas (domyślnie 'now')
      * @return string|null Czas w formacie H:i lub null jeśli dostępna teraz
      */
-    public function getNextAvailableTime(int $roomId): ?string
+    public function getNextAvailableTime(int $roomId, ?string $checkDate = null, ?string $checkTime = null): ?string
     {
         // Jeśli sala jest wolna teraz, zwróć null
-        if (!$this->isRoomOccupiedNow($roomId)) {
+        if (!$this->isRoomOccupiedNow($roomId, $checkDate, $checkTime)) {
             return null;
         }
+
+        $date = $checkDate ?? date('Y-m-d');
+        $time = $checkTime ?? date('H:i:s');
         
         // Znajdź koniec bieżącej rezerwacji
         $stmt = $this->pdo->prepare("
             SELECT end_time
             FROM bookings
             WHERE room_id = :room_id
-              AND date = CURRENT_DATE
-              AND start_time <= CURRENT_TIME
-              AND end_time > CURRENT_TIME
+              AND date = :date
+              AND start_time <= :time
+              AND end_time > :time
               AND status = 'confirmed'
             ORDER BY end_time ASC
             LIMIT 1
         ");
         
         $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->bindParam(':date', $date);
+        $stmt->bindParam(':time', $time);
         $stmt->execute();
         
         $result = $stmt->fetch(PDO::FETCH_ASSOC);

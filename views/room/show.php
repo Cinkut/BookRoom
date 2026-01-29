@@ -27,7 +27,14 @@
                         <h1 class="room-title"><?= htmlspecialchars($room['name']) ?></h1>
                         <div class="room-subtitle">5th Floor, West Wing</div> <!-- Hardcoded location mockup -->
                         <div class="badges">
-                            <span class="badge badge-success">Available Now</span>
+                            <?php if (!empty($isOccupied)): ?>
+                                <span class="badge badge-error">Occupied</span>
+                                <?php if (!empty($nextAvailable)): ?>
+                                    <span class="badge badge-neutral" style="font-size: 11px; margin-left: 4px;">Until <?= substr($nextAvailable, 0, 5) ?></span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="badge badge-success">Available Now</span>
+                            <?php endif; ?>
                             <span class="badge badge-neutral">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>

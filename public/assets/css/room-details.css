@@ -115,6 +115,11 @@ body {
     color: var(--text-secondary);
 }
 
+.badge-error {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
 .room-desc {
     color: var(--text-secondary);
     font-size: 14px;
