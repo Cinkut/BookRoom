@@ -14,6 +14,9 @@ require_once __DIR__ . '/../src/Autoload.php';
 // === 1.1 Ładowanie funkcji pomocniczych ===
 require_once __DIR__ . '/../src/Helpers.php';
 
+// === 1.2 Konfiguracja Strefy Czasowej ===
+date_default_timezone_set('Europe/Warsaw');
+
 // === 2. Inicjalizacja bezpieczeństwa ===
 use Security\SecurityConfig;
 
