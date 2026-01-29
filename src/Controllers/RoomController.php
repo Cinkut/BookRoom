@@ -122,8 +122,23 @@ class RoomController
         try {
            $dt = new \DateTime($date);
            $formattedDate = $dt->format('Y-m-d');
+           
+           // Validation: Prevent booking in the past
+           $bookingStartDateTime = new \DateTime($formattedDate . ' ' . $startTime);
+           $currentDateTime = new \DateTime();
+
+           if ($bookingStartDateTime < $currentDateTime) {
+               throw new \Exception("Cannot book a room in the past. Please select a future date and time.");
+           }
+
         } catch (\Exception $e) {
-           $formattedDate = date('Y-m-d'); // Fallback
+             // Handle invalid date or past date by rendering error
+             echo "<div style='padding: 20px; text-align: center; font-family: sans-serif;'>";
+             echo "<h2 style='color: #dc2626;'>Validation Error</h2>";
+             echo "<p>" . htmlspecialchars($e->getMessage()) . "</p>";
+             echo "<a href='/rooms/$roomId/book' style='display: inline-block; margin-top: 10px; padding: 10px 20px; background: #000; color: #fff; text-decoration: none; border-radius: 6px;'>Go Back</a>";
+             echo "</div>";
+             return;
         }
 
         try {
