@@ -265,6 +265,13 @@ textarea.form-control {
     color: white;
 }
 
+.day-cell.disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+    background: transparent;
+    pointer-events: none;
+}
+
 /* Booking Summary */
 .booking-summary {
     padding-top: 24px;

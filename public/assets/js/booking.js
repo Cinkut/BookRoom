@@ -54,7 +54,28 @@ document.addEventListener('DOMContentLoaded', function() {
     dateInput.addEventListener('change', (e) => {
         const d = new Date(e.target.value);
         if (!isNaN(d.getTime())) {
-            currentDate = d;
+            // Prevent selecting past dates via input manually
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Adjust input date to local midnight for comparison
+            // (Standard Date constructor from YYYY-MM-DD treats as UTC, but we want local check usually, 
+            // or just simple string comparison if we trust consistency.
+            // Let's use the same logic as renderCalendar: setHours(0,0,0,0))
+            
+            // Fix: Create date from input properly
+            const [y, m, day] = e.target.value.split('-').map(Number);
+            const inputDate = new Date(y, m - 1, day);
+            inputDate.setHours(0, 0, 0, 0);
+
+            if (inputDate < today) {
+                // If past date, reset to today
+                dateInput.value = formatDate(today);
+                currentDate = today;
+            } else {
+                currentDate = d;
+            }
+
             renderCalendar(currentDate);
             updateSummary();
         }
@@ -70,11 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         monthDisplay.textContent = `${monthNames[month]} ${year}`;
 
-        // Clear grid (keep headers)
-        // Note: The HTML structure has headers inside .calendar-grid. 
-        // We should probably separate them or being careful not to remove them.
-        // Let's assume we rebuild the day cells.
-        
         // Remove existing .day-cell elements
         const existingDays = calendarGrid.querySelectorAll('.day-cell');
         existingDays.forEach(el => el.remove());
@@ -96,35 +112,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Current month days
         const today = new Date();
-        const selectedDate = new Date(dateInput.value);
+        today.setHours(0, 0, 0, 0);
 
+        const selectedDate = new Date(dateInput.value);
+        // Correct selectedDate parsing to avoid timezone offset issues on simple equality check
+        // Ideally we compare Y-M-D strings or ensure components match
+        
         for (let i = 1; i <= daysInMonth; i++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
             cell.textContent = i;
             
-            // Check if this is the selected day
-            if (year === selectedDate.getFullYear() && 
-                month === selectedDate.getMonth() && 
-                i === selectedDate.getDate()) {
-                cell.classList.add('active');
+            const cellDate = new Date(year, month, i);
+            cellDate.setHours(0, 0, 0, 0);
+
+            // Check if past date
+            if (cellDate < today) {
+                cell.classList.add('disabled');
+            } else {
+                // Click handler only for valid dates
+                cell.addEventListener('click', () => {
+                    // Remove active class from others
+                    document.querySelectorAll('.day-cell.active').forEach(el => el.classList.remove('active'));
+                    cell.classList.add('active');
+                    
+                    // Update input
+                    // Construct local date string YYYY-MM-DD
+                    const y = year;
+                    const m = String(month + 1).padStart(2, '0');
+                    const d = String(i).padStart(2, '0');
+                    dateInput.value = `${y}-${m}-${d}`;
+                    
+                    updateSummary();
+                });
             }
 
-            // Click handler
-            cell.addEventListener('click', () => {
-                // Remove active class from others
-                document.querySelectorAll('.day-cell.active').forEach(el => el.classList.remove('active'));
+            // Check if this is the selected day
+            const [selY, selM, selD] = dateInput.value.split('-').map(Number);
+            if (year === selY && 
+                month + 1 === selM && 
+                i === selD) {
                 cell.classList.add('active');
-                
-                // Update input
-                const newDate = new Date(year, month, i);
-                // Adjust for timezone offset so YYYY-MM-DD corresponds to local time
-                const offset = newDate.getTimezoneOffset();
-                const localDate = new Date(newDate.getTime() - (offset * 60 * 1000));
-                dateInput.value = localDate.toISOString().split('T')[0];
-                
-                updateSummary();
-            });
+            }
 
             calendarGrid.appendChild(cell);
         }
@@ -182,12 +211,67 @@ document.addEventListener('DOMContentLoaded', function() {
             
             availabilitySection.style.display = 'block';
             
+            // Auto-calculate next available time
+            calculateNextAvailableTime(currentBookings, date);
+            
             // Check for conflicts with current selection
             checkTimeConflict();
             
         } catch (error) {
             console.error('Error fetching availability:', error);
             occupiedSlots.innerHTML = '<div style="text-align: center; padding: 12px; color: #ef4444;">Failed to load availability</div>';
+        }
+    }
+    
+    function calculateNextAvailableTime(bookings, dateStr) {
+        if (!startTimeInput || !endTimeInput) return;
+
+        // Parse selected date
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const selectedDate = new Date(y, m - 1, d);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let startHour = 9; // Default start hour (09:00)
+        
+        // If selected date is today, start checking from next hour
+        if (selectedDate.getTime() === today.getTime()) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            // Start at least from next hour, or 9 if early morning
+            startHour = Math.max(9, currentHour + 1);
+        }
+
+        // Search for a 1-hour slot (startHour -> startHour + 1) that is free
+        // Scan until 23:00 (11 PM) allowing boookings starting up to 23:00
+        let foundStart = null;
+        
+        for (let h = startHour; h < 24; h++) {
+            // Check if slot [h:00, h+1:00] overlaps with any booking
+            const proposedStart = `${String(h).padStart(2, '0')}:00`;
+            const proposedEnd = `${String(h + 1).padStart(2, '0')}:00`;
+            
+            let conflict = false;
+            for (const booking of bookings) {
+                // Simple string comparison for time works for HH:MM format
+                // Overlap: (ProposedStart < BookingEnd) AND (ProposedEnd > BookingStart)
+                if (proposedStart < booking.end_time && proposedEnd > booking.start_time) {
+                    conflict = true;
+                    break;
+                }
+            }
+            
+            if (!conflict) {
+                foundStart = proposedStart;
+                break;
+            }
+        }
+        
+        if (foundStart) {
+            startTimeInput.value = foundStart;
+            // Set end time to 1 hour later
+            const [h, min] = foundStart.split(':').map(Number);
+            endTimeInput.value = `${String(h + 1).padStart(2, '0')}:00`;
         }
     }
     
@@ -207,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function checkTimeConflict() {
-        if (!startTimeInput || !endTimeInput || currentBookings.length === 0) {
+        if (!startTimeInput || !endTimeInput) { // Removed currentBookings.length === 0 check to allow validation even with no existing bookings
             hideConflictWarning();
             return;
         }
@@ -227,15 +311,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Check for overlaps with existing bookings
-        for (const booking of currentBookings) {
-            const bookingStart = booking.start_time;
-            const bookingEnd = booking.end_time;
-            
-            // Check if times overlap
-            // Overlap occurs if: (start < bookingEnd) AND (end > bookingStart)
-            if (startTime < bookingEnd && endTime > bookingStart) {
-                showConflictWarning(`This time conflicts with an existing booking (${bookingStart} - ${bookingEnd})`);
-                return;
+        if (currentBookings && currentBookings.length > 0) {
+            for (const booking of currentBookings) {
+                const bookingStart = booking.start_time;
+                const bookingEnd = booking.end_time;
+                
+                // Check if times overlap
+                // Overlap occurs if: (start < bookingEnd) AND (end > bookingStart)
+                if (startTime < bookingEnd && endTime > bookingStart) {
+                    showConflictWarning(`This time conflicts with an existing booking (${bookingStart} - ${bookingEnd})`);
+                    return;
+                }
             }
         }
         
