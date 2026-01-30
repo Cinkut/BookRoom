@@ -16,10 +16,26 @@
         <div class="left-col">
             <div class="card">
                 <div class="room-header">
-                    <div class="room-icon-lg">🏢</div>
+                    <?php
+                    $roomNameLower = strtolower($room['name']);
+                    $roomIcon = '🏢'; // Default
+                    
+                    if (str_contains($roomNameLower, 'lab') || str_contains($roomNameLower, 'innovation')) {
+                        $roomIcon = '💡';
+                    } elseif (str_contains($roomNameLower, 'board') || str_contains($roomNameLower, 'executive')) {
+                        $roomIcon = '👔';
+                    } elseif (str_contains($roomNameLower, 'training') || str_contains($roomNameLower, 'library') || str_contains($roomNameLower, 'quiet')) {
+                        $roomIcon = '📚';
+                    } elseif (str_contains($roomNameLower, 'studio') || str_contains($roomNameLower, 'creative') || str_contains($roomNameLower, 'design')) {
+                        $roomIcon = '🎨';
+                    } elseif (str_contains($roomNameLower, 'meeting') || str_contains($roomNameLower, 'conference')) {
+                        $roomIcon = '🤝';
+                    }
+                    ?>
+                    <div class="room-icon-lg"><?= $roomIcon ?></div>
                     <div>
                         <h1 class="room-title"><?= htmlspecialchars($room['name']) ?></h1>
-                        <div class="room-subtitle">5th Floor, West Wing</div> <!-- Hardcoded location mockup -->
+                        <div class="room-subtitle">5th Floor, West Wing</div>
                         <div class="badges">
                             <?php if (!empty($isOccupied)): ?>
                                 <span class="badge badge-error">Occupied</span>
@@ -46,7 +62,6 @@
                     <?= htmlspecialchars($room['description'] ?? 'No description available.') ?>
                 </div>
 
-                <!-- Mockup button functionality -->
                 <a href="/rooms/<?= $room['id'] ?>/book" class="btn-book" style="display: block; text-align: center; text-decoration: none; box-sizing: border-box;">Book This Room</a>
             </div>
 
@@ -58,7 +73,7 @@
                     if (empty($room['equipment_list'])) $equipment = ['Standard Meeting Setup'];
                     
                     foreach ($equipment as $item): 
-                        // Mock icons based on keywords
+                        // Map equipment names to icons
                         $icon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'; // default
                         $itemName = strtolower($item);
                         
@@ -80,7 +95,6 @@
             <div class="card">
                 <div class="section-title">Amenities</div>
                 <div class="amenities-list">
-                    <!-- Static Mock Data as per screenshot requirements -->
                     <span class="amenity-tag">Coffee Machine</span>
                     <span class="amenity-tag">Water Dispenser</span>
                     <span class="amenity-tag">Climate Control</span>

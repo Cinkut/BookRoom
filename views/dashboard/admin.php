@@ -61,6 +61,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <?php 
+                        // Generate CSRF tokens once outside the loop to avoid overwriting them
+                        // stored in the session for the same action key.
+                        $deleteTokenField = Security\CsrfProtection::getTokenField('admin_delete_user');
+                        ?>
                         <?php if (!empty($allUsers)): ?>
                             <?php foreach ($allUsers as $u): ?>
                             <tr>
@@ -81,7 +86,7 @@
                                         
                                         <!-- Delete User Form -->
                                         <form action="/admin/users/delete" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                            <?php echo Security\CsrfProtection::getTokenField('admin_delete_user'); ?>
+                                            <?= $deleteTokenField ?>
                                             <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
                                             <button type="submit" class="btn-delete">Delete</button>
                                         </form>

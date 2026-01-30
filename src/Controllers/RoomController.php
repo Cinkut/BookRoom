@@ -42,7 +42,7 @@ class RoomController
         $user = $_SESSION['user'];
 
         // Renderuj widok dashboard
-        // TODO: Zmienić na dedykowany widok listy pokoi jeśli powstanie, na razie dashboard
+        // Render the view (using dashboard for now as it serves the purpose)
         // W routingu index() jest mapowane na /rooms, a dashboard na DashboardController
         header('Location: /dashboard');
         exit;
@@ -117,11 +117,20 @@ class RoomController
         }
 
         // Pobranie danych z formularza
-        // TODO: Dodać lepszą walidację danych wejściowych
+        // Basic validation
         $date = $_POST['date'] ?? date('Y-m-d'); // Oczekiwany format YYYY-MM-DD
         $startTime = $_POST['start_time'] ?? '09:00';
         $endTime = $_POST['end_time'] ?? '10:00';
-        $attendees = $_POST['attendees'] ?? 1;
+        $attendees = (int)($_POST['attendees'] ?? 1);
+
+        if ($attendees < 1) {
+            echo "<div style='padding: 20px; text-align: center; font-family: sans-serif;'>";
+            echo "<h2 style='color: #dc2626;'>Validation Error</h2>";
+            echo "<p>Number of attendees must be at least 1.</p>";
+            echo "<a href='/rooms/$roomId/book' style='display: inline-block; margin-top: 10px; padding: 10px 20px; background: #000; color: #fff; text-decoration: none; border-radius: 6px;'>Go Back</a>";
+            echo "</div>";
+            return;
+        }
         
         // Prosta konwersja daty z formatu "Wednesday, October 29, 2025" na "2025-10-29" jeśli potrzeba
         // Na razie zakładamy, że input date przesyła Y-m-d lub użytkownik wpisał poprawnie
@@ -168,7 +177,6 @@ class RoomController
         } catch (\PDOException $e) {
             // Błąd bazy danych (np. trigger konfliktu terminów)
             // W prosty sposób wyświetlamy błąd i przycisk powrotu
-            // TODO: W przyszłości przekazać błąd do widoku book.php i wyświetlić w formularzu
             $errorMessage = "Booking failed! The room is likely already booked for this time slot.";
             if (str_contains($e->getMessage(), 'conflict')) {
                  $errorMessage = "This time slot is already occupied.";

@@ -55,8 +55,20 @@
                         $nextAvailableText = date('g:i A', strtotime($time));
                     }
                     
-                    $icons = ['🏢', '💡', '👔', '🎨', '🤝', '📚'];
-                    $icon = $icons[array_rand($icons)];
+                    $roomNameLower = strtolower($room->getName());
+                    $icon = '🏢'; // Default
+                    
+                    if (str_contains($roomNameLower, 'lab') || str_contains($roomNameLower, 'innovation')) {
+                        $icon = '💡';
+                    } elseif (str_contains($roomNameLower, 'board') || str_contains($roomNameLower, 'executive')) {
+                        $icon = '👔';
+                    } elseif (str_contains($roomNameLower, 'training') || str_contains($roomNameLower, 'library') || str_contains($roomNameLower, 'quiet')) {
+                        $icon = '📚';
+                    } elseif (str_contains($roomNameLower, 'studio') || str_contains($roomNameLower, 'creative') || str_contains($roomNameLower, 'design')) {
+                        $icon = '🎨';
+                    } elseif (str_contains($roomNameLower, 'meeting') || str_contains($roomNameLower, 'conference')) {
+                        $icon = '🤝';
+                    }
                 ?>
                 <div class="room-card" data-status="<?= $status ?>">
                     <div class="card-header">
