@@ -7,16 +7,14 @@
     <link rel="stylesheet" href="/assets/css/room.css">
 </head>
 <body>
+    <?php include __DIR__ . '/../shared/navbar.php'; ?>
+
     <div class="container">
         <!-- Header -->
         <div class="page-header">
             <div>
                 <h1>Conference Rooms</h1>
                 <p class="subtitle">Browse and book available conference rooms</p>
-            </div>
-            <div class="header-actions">
-                <a href="/dashboard" class="btn btn-outline">← Back to Dashboard</a>
-                <a href="/logout" class="btn btn-primary">Logout</a>
             </div>
         </div>
         

@@ -4,18 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($room['name']) ?> - Room Details</title>
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
     <link rel="stylesheet" href="/assets/css/room-details.css">
 </head>
 <body>
 
-    <nav class="navbar">
-        <a href="/dashboard" class="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Room Details
-        </a>
-    </nav>
+    <?php include __DIR__ . '/../shared/navbar.php'; ?>
 
     <div class="container">
         <!-- Room Info Column -->
