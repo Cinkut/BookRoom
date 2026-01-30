@@ -12,13 +12,13 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>🔒 Zmiana hasła</h1>
+                <h1>Zmiana hasła</h1>
                 <p>Ustaw nowe, bezpieczne hasło</p>
             </div>
             
             <?php if ($isForced): ?>
                 <div class="forced-change-notice">
-                    <strong>⚠️ Wymagana zmiana hasła</strong>
+                    <strong>Wymagana zmiana hasła</strong>
                     Administrator utworzył Twoje konto z tymczasowym hasłem. Ze względów bezpieczeństwa musisz ustawić własne, silne hasło przed kontynuowaniem.
                 </div>
             <?php endif; ?>
@@ -35,9 +35,6 @@
             <?php endif; ?>
             
             <?php if (isset($_SESSION['info'])): ?>
-                <div class="alert-info">
-                    <?= htmlspecialchars($_SESSION['info']) ?>
-                </div>
                 <?php unset($_SESSION['info']); ?>
             <?php endif; ?>
             
@@ -89,7 +86,7 @@
                 </div>
                 
                 <div class="password-requirements">
-                    <h3>📋 Wymagania dotyczące hasła:</h3>
+                    <h3>Wymagania dotyczące hasła:</h3>
                     <ul id="requirementsList">
                         <li id="req-length" class="requirement">
                             <span class="req-icon">○</span>
@@ -110,7 +107,7 @@
                     </ul>
                 </div>
                 
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn btn-primary btn-block">
                     Zmień hasło
                 </button>
                 

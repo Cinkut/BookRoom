@@ -128,7 +128,7 @@
                     
                     <!-- Conflict Warning -->
                     <div id="conflict-warning" style="display: none; background: #FEE2E2; color: #991B1B; padding: 12px; border-radius: 6px; margin-top: 16px; font-size: 13px;">
-                        ⚠️ <strong>Time Conflict!</strong><br>
+                          <strong>Time Conflict!</strong><br>
                         <span id="conflict-message"></span>
                     </div>
                 </div>
