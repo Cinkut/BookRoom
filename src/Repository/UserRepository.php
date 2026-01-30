@@ -431,6 +431,36 @@ class UserRepository
     }
 
     /**
+     * Utwórz brakujący profil dla użytkownika
+     * 
+     * @param int $userId ID użytkownika
+     * @param string $firstName Imię
+     * @param string $lastName Nazwisko
+     * @param string|null $phoneNumber Numer telefonu (opcjonalny)
+     * @return bool True jeśli utworzenie powiodło się
+     */
+    public function createProfile(int $userId, string $firstName, string $lastName, ?string $phoneNumber = null): bool
+    {
+        try {
+            $sql = "
+                INSERT INTO user_profiles (user_id, first_name, last_name, phone_number) 
+                VALUES (:user_id, :first_name, :last_name, :phone_number)
+            ";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':first_name', $firstName, PDO::PARAM_STR);
+            $stmt->bindParam(':last_name', $lastName, PDO::PARAM_STR);
+            $stmt->bindParam(':phone_number', $phoneNumber, PDO::PARAM_STR); // PDO handles null as NULL
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("UserRepository::createProfile - Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Zaktualizuj profil użytkownika
      * 
      * @param int $userId ID użytkownika

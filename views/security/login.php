@@ -69,29 +69,11 @@
                     >
                 </div>
                 
-                <!-- Remember me + Forgot password (jak w prototypie) -->
-                <div class="form-row">
-                    <div class="form-checkbox">
-                        <input type="checkbox" id="remember" name="remember">
-                        <label for="remember">Remember me</label>
-                    </div>
-                    <a href="#" class="form-link">Forgot password?</a>
-                </div>
                 
                 <button type="submit" class="btn btn-primary btn-block">
                     Sign In
                 </button>
             </form>
-            
-            <!-- Link do rejestracji -->
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="#">Contact your admin</a></p>
-            </div>
-            
-            <!-- Demo credentials -->
-            <div class="demo-credentials">
-                <p><strong>Demo:</strong> Use any email and password to sign in</p>
-            </div>
         </div>
     </div>
 </body>

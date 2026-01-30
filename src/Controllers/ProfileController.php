@@ -141,19 +141,21 @@ class ProfileController
         $profile = $userRepo->getProfile($userId);
 
         if (!$profile) {
-            // Jeśli z jakiegoś powodu profil nie istnieje (np. stary user), stwórz go?
-            // create() w UserRepository tworzy pusty, ale tutaj mamy update.
-            // Ale migracja powinna była stworzyć dla wszystkich.
-            // Załóżmy, że istnieje.
-            header('Location: /profile?profile_error=profile_not_found');
+            // Profil nie istnieje (np. stary użytkownik), tworzymy nowy z podanym numerem telefonu
+            // Używamy domyślnych wartości dla imienia i nazwiska
+            if ($userRepo->createProfile($userId, 'User', 'Name', $phoneNumber)) {
+                header('Location: /profile?profile_success=1');
+            } else {
+                header('Location: /profile?profile_error=create_failed');
+            }
             exit;
         }
 
-        // Przygotuj dane do aktualizacji
+        // Profil istnieje, aktualizujemy tylko numer telefonu
         $updateData = [
-            'first_name' => $profile['first_name'], // Zachowaj stare
-            'last_name' => $profile['last_name'],   // Zachowaj stare
-            'phone_number' => $phoneNumber          // Zaktualizuj nowe
+            'first_name' => $profile['first_name'], // Zachowaj stare imię
+            'last_name' => $profile['last_name'],   // Zachowaj stare nazwisko
+            'phone_number' => $phoneNumber
         ];
 
         if ($userRepo->updateProfile($userId, $updateData)) {
