@@ -86,15 +86,8 @@
                                 <td><?= date('M j, Y', strtotime($u['created_at'])) ?></td>
                                 <td>
                                     <?php if ($u['id'] !== $_SESSION['user']['id']): ?>
-                                        <!-- Change Role Form -->
-                                        <form action="/admin/users/update-role" method="POST" style="display: inline-block; margin-right: 8px;">
-                                            <?php echo Security\CsrfProtection::getTokenField('admin_update_role'); ?>
-                                            <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                            <select name="role_id" class="mini-select" onchange="this.form.submit()">
-                                                <option value="2" <?= $u['role_id'] == 2 ? 'selected' : '' ?>>Member</option>
-                                                <option value="1" <?= $u['role_id'] == 1 ? 'selected' : '' ?>>Admin</option>
-                                            </select>
-                                        </form>
+                                        <!-- Edit/Details Button -->
+                                        <a href="/admin/users/<?= $u['id'] ?>/edit" class="btn-details">Details</a>
                                         
                                         <!-- Delete User Form -->
                                         <form action="/admin/users/delete" method="POST" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this user?');">

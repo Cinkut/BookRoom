@@ -256,4 +256,74 @@ class DashboardController
         }
         exit;
     }
+    /**
+     * Wyświetl formularz edycji użytkownika
+     */
+    public function editUser(array $params): void
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Security check
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
+            header('Location: /dashboard');
+            exit;
+        }
+
+        $userId = (int)$params['id'];
+        $user = $this->userRepository->findById($userId); // Pobiera również dane profilowe
+
+        if (!$user) {
+            header('Location: /admin/dashboard?error=user_not_found');
+            exit;
+        }
+        
+        require_once __DIR__ . '/../../views/dashboard/user_edit.php';
+    }
+
+    /**
+     * Aktualizuj dane użytkownika
+     */
+    public function updateUser(array $params): void
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        // Security check
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
+            http_response_code(403);
+            die('Access Denied');
+        }
+
+        // Weryfikacja tokena CSRF
+        if (!CsrfProtection::validateToken('admin_update_user')) {
+             // W przypadku błędu CSRF wróć do formularza edycji, nie dashboardu głównego
+            $userId = (int)$params['id'];
+            header("Location: /admin/users/$userId/edit?error=invalid_csrf");
+            exit;
+        }
+
+        $userId = (int)$params['id'];
+        $firstName = trim($_POST['first_name'] ?? '');
+        $lastName = trim($_POST['last_name'] ?? '');
+        $roleId = (int)($_POST['role_id'] ?? 0);
+
+        // Security: Cannot edit own role
+        if ($userId === $_SESSION['user']['id'] && $roleId !== 1) {
+            header("Location: /admin/users/$userId/edit?error=cannot_change_own_role");
+            exit;
+        }
+
+        // 1. Update Profile (Name)
+        $this->userRepository->updateProfile($userId, [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'phone_number' => '' // Na razie opcjonalne/puste
+        ]);
+
+        // 2. Update Role
+        if ($this->userRepository->updateRole($userId, $roleId)) {
+            header('Location: /admin/dashboard?success=user_updated');
+        } else {
+            header("Location: /admin/users/$userId/edit?error=update_failed");
+        }
+    }
 }
