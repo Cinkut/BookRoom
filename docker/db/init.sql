@@ -17,6 +17,7 @@ DROP TABLE IF EXISTS bookings CASCADE;
 DROP TABLE IF EXISTS room_equipment CASCADE;
 DROP TABLE IF EXISTS equipment CASCADE;
 DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS user_settings CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 
@@ -44,6 +45,15 @@ CREATE TABLE users (
 
 -- Indeks na email dla szybkiego wyszukiwania przy logowaniu
 CREATE INDEX idx_users_email ON users(email);
+
+-- Tabela: user_settings (relacja 1:1 - użytkownik <-> ustawienia)
+CREATE TABLE user_settings (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    language VARCHAR(10) DEFAULT 'pl',
+    notifications_enabled BOOLEAN DEFAULT TRUE,
+    theme VARCHAR(20) DEFAULT 'light',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
 
 -- Tabela: rooms (sale konferencyjne)
 CREATE TABLE rooms (
@@ -105,7 +115,7 @@ SELECT
     r.image_path,
     COALESCE(
         STRING_AGG(e.name, ', ' ORDER BY e.name),
-        'Brak wyposażenia'
+        'No equipment'
     ) AS equipment_list,
     COUNT(DISTINCT re.equipment_id) AS equipment_count
 FROM rooms r
@@ -163,7 +173,7 @@ BEGIN
               (NEW.start_time <= start_time AND NEW.end_time >= end_time)
           )
     ) THEN
-        RAISE EXCEPTION 'Sala % jest już zarezerwowana w tym czasie (%, %-%)', 
+        RAISE EXCEPTION 'Room % is already booked during this time (%, %-%)', 
             NEW.room_id, NEW.date, NEW.start_time, NEW.end_time;
     END IF;
     
@@ -197,24 +207,30 @@ INSERT INTO users (email, password, role_id) VALUES
     ('user@bookroom.com', '$2y$10$YI/wqIarcjto5fki3H/qruXOq6D6KRAY2Oe/1yxGU3df84djFdgYC', 2),
     ('john.doe@example.com', '$2y$10$YI/wqIarcjto5fki3H/qruXOq6D6KRAY2Oe/1yxGU3df84djFdgYC', 2);
 
+-- Ustawienia użytkowników (1:1)
+INSERT INTO user_settings (user_id, language, notifications_enabled, theme) VALUES
+    (1, 'en', true, 'dark'),
+    (2, 'pl', true, 'light'),
+    (3, 'pl', false, 'light');
+
 -- Sale konferencyjne
 INSERT INTO rooms (name, capacity, description, image_path) VALUES 
     (
         'Executive Suite',
         12,
-        'Elegancka sala konferencyjna idealna dla spotkań zarządu. Wyposażona w nowoczesny sprzęt prezentacyjny i wygodne meble.',
+        'Elegant conference room ideal for board meetings. Equipped with modern presentation equipment and comfortable furniture.',
         '/assets/img/executive-suite.jpg'
     ),
     (
         'Innovation Lab',
         8,
-        'Kreatywna przestrzeń do burzy mózgów i warsztatów. Elastyczne ustawienie, tablica suchościeralna i projektor multimedialny.',
+        'Creative space for brainstorming and workshops. Flexible layout, whiteboard, and multimedia projector.',
         '/assets/img/innovation-lab.jpg'
     ),
     (
         'Board Room',
         20,
-        'Przestronna sala konferencyjna dla większych grup. Idealna do prezentacji, szkoleń i spotkań całego zespołu.',
+        'Spacious conference room for larger groups. Ideal for presentations, training sessions, and team meetings.',
         '/assets/img/board-room.jpg'
     );
 

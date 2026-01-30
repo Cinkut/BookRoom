@@ -33,18 +33,33 @@ class BookingRepository
      */
     public function createBooking(int $userId, int $roomId, string $date, string $startTime, string $endTime): bool
     {
-        $stmt = $this->pdo->prepare("
-            INSERT INTO bookings (user_id, room_id, date, start_time, end_time, status)
-            VALUES (:user_id, :room_id, :date, :start_time, :end_time, 'confirmed')
-        ");
+        try {
+            $this->pdo->beginTransaction();
 
-        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
-        $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
-        $stmt->bindParam(':date', $date);
-        $stmt->bindParam(':start_time', $startTime);
-        $stmt->bindParam(':end_time', $endTime);
+            // Check if user has settings (just to demonstrate 1:1 usage in transaction, optional but good for validity)
+            // $stmtSettings = $this->pdo->prepare("SELECT language FROM user_settings WHERE user_id = :uid");
+            // $stmtSettings->execute([':uid' => $userId]);
 
-        return $stmt->execute();
+            $stmt = $this->pdo->prepare("
+                INSERT INTO bookings (user_id, room_id, date, start_time, end_time, status)
+                VALUES (:user_id, :room_id, :date, :start_time, :end_time, 'confirmed')
+            ");
+
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+            $stmt->bindParam(':date', $date);
+            $stmt->bindParam(':start_time', $startTime);
+            $stmt->bindParam(':end_time', $endTime);
+
+            $result = $stmt->execute();
+            
+            $this->pdo->commit();
+            
+            return $result;
+        } catch (\Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
     
     /**
