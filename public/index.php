@@ -29,6 +29,9 @@ SecurityConfig::initSecureSession();
 // Nagłówki bezpieczeństwa HTTP
 SecurityConfig::setSecurityHeaders();
 
+// Konfiguracja wyświetlania błędów (ukrywanie stack trace w produkcji)
+SecurityConfig::configureErrorDisplay();
+
 // === 3. Router - rejestracja routes i dispatch ===
 
 $router = new Router();

@@ -118,4 +118,31 @@ class SecurityConfig
         // Referrer Policy
         header('Referrer-Policy: strict-origin-when-cross-origin');
     }
+    /**
+     * Konfiguracja wyświetlania błędów (Security Bingo E4)
+     * 
+     * W produkcji błędy nie powinny być wyświetlane użytkownikowi (display_errors = 0),
+     * ale powinny być logowane (log_errors = 1).
+     */
+    public static function configureErrorDisplay(): void
+    {
+        // Sprawdź czy to localhost
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $isLocal = in_array($host, ['localhost', '127.0.0.1', 'localhost:8080', 'localhost:8443']);
+        
+        if ($isLocal) {
+            // Development: Pokaż błędy
+            ini_set('display_errors', '1');
+            ini_set('display_startup_errors', '1');
+            error_reporting(E_ALL);
+        } else {
+            // Production: Ukryj błędy, ale loguj
+            ini_set('display_errors', '0');
+            ini_set('display_startup_errors', '0');
+            error_reporting(E_ALL);
+            ini_set('log_errors', '1');
+            // Opcjonalnie: zdefiniuj ścieżkę do logów jeśli inna niż domyślna
+            // ini_set('error_log', '/var/log/php_errors.log');
+        }
+    }
 }
